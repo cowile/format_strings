@@ -1,0 +1,10 @@
+name = "format_strings"
+description = "Build and print formatted strings"
+version = "0.1.0-dev"
+
+authors = ["Colton Lewis"]
+maintainers = ["Colton Lewis <colton.w.lewis@protonmail.com>"]
+maintainers-logins = ["cowile"]
+licenses = "GPL-3.0-or-later"
+website = "https://github.com/cowile/format_strings"
+tags = ["format", "formatting", "strings", "templates"]
