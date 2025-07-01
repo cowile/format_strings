@@ -1,0 +1,24 @@
+name = "tests"
+description = "Tests for format_strings"
+version = "0.1.0-dev"
+
+authors = ["Colton Lewis"]
+maintainers = ["Colton Lewis <colton.w.lewis@protonmail.com>"]
+maintainers-logins = ["cowile"]
+licenses = "GPL-3.0-or-later"
+website = ""
+tags = []
+
+executables = ["tests"]
+
+[[depends-on]]
+format_strings = "0.1.0-dev"
+
+[[pins]]
+format_strings = { path =".." }
+
+[build-profiles]
+format_strings = "development"
+
+[build-switches]
+"*" . ada_version = "ada2022"
