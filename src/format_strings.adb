@@ -65,9 +65,9 @@ package body Format_Strings is
    end Create;
 
    procedure Format (FS : in out Format_String; Arg : T) is
-      Location : constant Natural := FS.Filled * 2 + 1;
+      Pos : constant Natural := FS.Filled * 2 + 1;
    begin
-      Bounded_Strings.Append (FS.Constructed (Location), T'Image (Arg));
+      Bounded_Strings.Append (FS.Constructed (Pos), T'Image (Arg));
       FS.Filled := FS.Filled + 1;
    end Format;
 

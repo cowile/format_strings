@@ -5,9 +5,9 @@ package Format_Strings is
    package Bounded_Strings is new
      Ada.Strings.Bounded.Generic_Bounded_Length (256);
 
-   Escape_Character : Character := '\';
-   Start_Hole_Character : Character := '{';
-   End_Hole_Character : Character := '}';
+   Escape_Character : constant Character := '\';
+   Start_Hole_Character : constant Character := '{';
+   End_Hole_Character : constant Character := '}';
 
    subtype Template is Bounded_Strings.Bounded_String;
    type Pieces is
@@ -21,8 +21,6 @@ package Format_Strings is
          Constructed : Pieces (0 .. Parts);
       end record;
 
-   function Count_Holes (T : Template) return Natural;
-   function Create (T : Template) return Format_String;
    function Create (S : String) return Format_String;
 
    generic
