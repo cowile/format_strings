@@ -1,6 +1,6 @@
 name = "tests"
 description = "Tests for format_strings"
-version = "0.1.0-dev"
+version = "0.1.0"
 
 authors = ["Colton Lewis"]
 maintainers = ["Colton Lewis <colton.w.lewis@protonmail.com>"]
@@ -12,7 +12,7 @@ tags = []
 executables = ["tests"]
 
 [[depends-on]]
-format_strings = "0.1.0-dev"
+format_strings = "0.1.0"
 
 [[pins]]
 format_strings = { path =".." }
