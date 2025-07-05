@@ -1,10 +1,5 @@
 package body Format_Strings.Common is
 
-   --  Helper type for string wrapper
-   type String_Holder (Length : Natural) is record
-      Value : String (1 .. Length);
-   end record;
-
    --  Single argument wrapper for String
    function Format_S (Template : String; Arg : String) return String is
       subtype Arg_String is String (Arg'Range);

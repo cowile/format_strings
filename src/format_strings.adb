@@ -5,26 +5,6 @@ package body Format_Strings is
 
    type Parse_State is (Normal, Escape, In_Hole);
 
-   --  Simple string buffer implementation
-   type String_Buffer is record
-      Data : Unbounded_String;
-   end record;
-
-   procedure Append (Buf : in out String_Buffer; S : String) is
-   begin
-      Append (Buf.Data, S);
-   end Append;
-
-   procedure Append (Buf : in out String_Buffer; C : Character) is
-   begin
-      Append (Buf.Data, C);
-   end Append;
-
-   function To_String (Buf : String_Buffer) return String is
-   begin
-      return To_String (Buf.Data);
-   end To_String;
-
    --  Format integers according to spec
    function Format_Integer (Value : Integer; Spec : Format_Spec) return String
    is
@@ -211,7 +191,7 @@ package body Format_Strings is
            & To_String (Frac_String);
       end Fixed_Point_Image;
 
-      Precision : Natural :=
+      Precision : constant Natural :=
         (if Spec.Has_Precision then Spec.Precision else 6);
       Result    : Unbounded_String;
    begin

@@ -85,20 +85,20 @@ procedure Tests is
    begin
       Put_Line ("Testing zero padding...");
 
-      -- Basic zero padding
+      --  Basic zero padding
       Assert (Format_Int ("{:05}", 42) = "00042");
       Assert (Format_Int ("{:05}", -42) = "-0042");
 
-      -- Zero padding with different bases
+      --  Zero padding with different bases
       Assert (Format_Int ("{:#010x}", 255) = "0x000000ff");
       Assert (Format_Int ("{:#010X}", 255) = "0X000000FF");
       Assert (Format_Int ("{:#08b}", 15) = "0b001111");
 
-      -- Zero padding with sign
+      --  Zero padding with sign
       Assert (Format_Int ("{:+05}", 42) = "+0042");
       Assert (Format_Int ("{:+05}", -42) = "-0042");
 
-      -- Zero padding is ignored with explicit alignment
+      --  Zero padding is ignored with explicit alignment
       Assert (Format_Int ("{:<05}", 42) = "42   ");
       Assert (Format_Int ("{:>05}", 42) = "   42");
 
@@ -109,28 +109,28 @@ procedure Tests is
    begin
       Put_Line ("Testing float formatting...");
 
-      -- Basic float formatting
+      --  Basic float formatting
       Assert (Format_Float ("Pi: {}", 3.14159) = "Pi: 3.141590");
 
-      -- Precision control
+      --  Precision control
       Assert (Format_Float ("Pi: {:.2f}", 3.14159) = "Pi: 3.14");
       Assert (Format_Float ("Pi: {:.4f}", 3.14159) = "Pi: 3.1415");
       Assert (Format_Float ("Int: {:.0f}", 3.14159) = "Int: 3");
 
-      -- Sign control
+      --  Sign control
       Assert (Format_Float ("{:+.2f}", 3.14) = "+3.14");
       Assert (Format_Float ("{:+.2f}", -3.14) = "-3.14");
 
-      -- Scientific notation
+      --  Scientific notation
       Assert (Format_Float ("{:.2e}", 1234.5) = "1.23e+3");
       Assert (Format_Float ("{:.2E}", 1234.5) = "1.23E+3");
       Assert (Format_Float ("{:.3e}", 0.00123) = "1.230e-3");
 
-      -- Percentage
+      --  Percentage
       Assert (Format_Float ("{:.1%}", 0.125) = "12.5%");
       Assert (Format_Float ("{:.0%}", 0.99) = "99%");
 
-      -- Width and alignment
+      --  Width and alignment
       Assert (Format_Float ("{:10.2f}", 3.14) = "      3.14");
       Assert (Format_Float ("{:<10.2f}", 3.14) = "3.14      ");
       Assert (Format_Float ("{:^10.2f}", 3.14) = "   3.14   ");
@@ -142,18 +142,20 @@ procedure Tests is
    begin
       Put_Line ("Testing escape sequences...");
 
-      -- Escaped braces
+      --  Escaped braces
       Assert (Format_Int ("\{not a hole\}", 42) = "{not a hole}");
       Assert (Format_Str ("Use \{\} for holes", "test") = "Use {} for holes");
 
-      -- Mixed escaped and real holes
-      Assert (Format_Int ("Real {} and \{escaped\}", 42) = "Real 42 and {escaped}");
+      --  Mixed escaped and real holes
+      Assert
+        (Format_Int ("Real {} and \{escaped\}", 42) = "Real 42 and {escaped}");
       Assert (Format_2_Int ("\{} {} \{} {}", 1, 2) = "{} 1 {} 2");
 
-      -- Escaped backslash
-      Assert (Format_Str ("Path: C:\\Users\\{}", "Alice") = "Path: C:\Users\Alice");
+      --  Escaped backslash
+      Assert
+        (Format_Str ("Path: C:\\Users\\{}", "Alice") = "Path: C:\Users\Alice");
 
-      -- Escaped characters in format specs
+      --  Escaped characters in format specs
       Assert (Format_Str ("Value: \{{}\}", "test") = "Value: {test}");
 
       Put_Line ("  Escape sequences: PASSED");
