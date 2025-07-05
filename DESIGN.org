@@ -1,0 +1,253 @@
+#+title: Format_Strings v1.0 Design Document
+#+author: Claude & Colton Lewis
+#+date: 2025-07-05
+
+* Vision
+
+Format_Strings will be the exemplary Ada string formatting library that achieves:
+- Type safety without verbosity
+- Compile-time correctness where possible
+- Zero runtime overhead for common cases
+- Intuitive syntax that feels natural
+- Extensibility without complexity
+
+* Core Design Principles
+
+** Type Safety First
+Every formatting operation should be type-safe. Runtime errors from mismatched arguments are unacceptable.
+
+** Ergonomic API
+Common operations should be concise. The library should feel like a natural extension of Ada.
+
+** Performance
+No unnecessary allocations. Streaming interface for large outputs. Compile-time optimizations where possible.
+
+** Extensibility
+Users can define formatting for their own types without modifying the library.
+
+* API Design
+
+** Basic Usage
+
+#+begin_src ada
+-- Simple formatting with type inference
+Put_Line (Format ("Hello, {}!", Name));
+Put_Line (Format ("x = {}, y = {}", X, Y)); 
+
+-- With format specifiers
+Put_Line (Format ("Hex: {:#x}, Binary: {:#b}", 255, 42));
+Put_Line (Format ("Pi: {:.2f}", 3.14159));
+
+-- Positional arguments
+Put_Line (Format ("{1} before {0}", "cart", "horse"));
+
+-- Named arguments (future enhancement)
+Put_Line (Format ("{name} is {age} years old", 
+                  Name => "Alice", Age => 30));
+#+end_src
+
+** Format Specifiers
+
+Syntax: ~{[position][:flags][width][.precision][type]}~
+
+*** Flags
+- ~<~ Left align (default for strings)
+- ~>~ Right align (default for numbers)  
+- ~^~ Center align
+- ~+~ Always show sign
+- ~#~ Alternate form (0x prefix for hex, etc.)
+- ~0~ Zero padding
+
+*** Width
+Minimum field width as decimal number
+
+*** Precision
+- For floats: decimal places
+- For strings: maximum characters
+
+*** Type Specifiers
+- ~s~ String (default for String types)
+- ~d~ Decimal integer (default for Integer types)
+- ~x~ Hexadecimal (lowercase)
+- ~X~ Hexadecimal (uppercase)
+- ~o~ Octal
+- ~b~ Binary
+- ~f~ Fixed-point float (default for Float types)
+- ~e~ Exponential notation
+- ~g~ General format (shortest of f/e)
+- ~%~ Percentage (multiply by 100 and add %)
+
+** Type Classes
+
+#+begin_src ada
+-- Core formatting type class
+generic
+   type T is private;
+   with function Image (Item : T; Spec : Format_Spec) return String;
+package Formattable is
+   -- Implementation provided by library
+end Formattable;
+
+-- Users can instantiate for custom types
+function My_Type_Image (Item : My_Type; Spec : Format_Spec) return String;
+package My_Type_Formattable is new Formattable (My_Type, My_Type_Image);
+#+end_src
+
+** Compile-Time Safety
+
+#+begin_src ada
+-- Template strings with compile-time hole counting
+Template : constant Format_Template := "x = {}, y = {}";
+
+-- This knows it needs exactly 2 arguments at compile time
+Put_Line (Format (Template, X, Y));  -- OK
+Put_Line (Format (Template, X));     -- Compilation error!
+#+end_src
+
+** Streaming Interface
+
+#+begin_src ada
+-- For efficiency with large outputs
+Formatter : Format_Stream := Start ("Processing {} items:");
+Formatter.Arg (Count);
+Formatter.Flush (Output_File);
+
+for Item of Items loop
+   Formatter.Continue ("  Item {}: {}", Index, Item);
+   Formatter.Flush (Output_File);
+end loop;
+#+end_src
+
+* Implementation Strategy
+
+** Core Components
+
+*** Format_Spec
+Record type holding parsed format specifier details:
+- Alignment, width, precision, type, flags
+- Methods for parsing and validation
+
+*** Template_Parser
+Compile-time parsing of template strings:
+- Count holes
+- Extract literal segments
+- Parse format specifiers
+- Generate optimized formatting code
+
+*** Type_Formatter
+Generic package for type-specific formatting:
+- Integer formatting (all bases, widths)
+- Float formatting (precision, notation)
+- String formatting (truncation, padding)
+- Boolean formatting
+
+*** Format_Buffer
+Efficient string building without excessive allocation:
+- Streaming append operations
+- Automatic growth
+- Direct write to files/streams
+
+** Memory Management
+- Stack allocation for small strings (<= 256 chars)
+- Heap allocation only when necessary
+- Reusable buffers for streaming
+- No allocations for literal-only templates
+
+** Error Handling
+- Compile-time errors for argument count mismatch
+- Constraint_Error for invalid format specifiers
+- Graceful handling of overflow
+
+* Advanced Features
+
+** Custom Formatters
+
+#+begin_src ada
+-- Define custom formatting
+type RGB_Color is record
+   R, G, B : Natural range 0 .. 255;
+end record;
+
+function Format_RGB (C : RGB_Color; Spec : Format_Spec) return String is
+begin
+   if Spec.Type_Char = 'h' then
+      return Format ("#{:02x}{:02x}{:02x}", C.R, C.G, C.B);
+   else
+      return Format ("rgb({}, {}, {})", C.R, C.G, C.B);
+   end if;
+end Format_RGB;
+#+end_src
+
+** Conditional Formatting
+
+#+begin_src ada
+-- Format based on value
+Put_Line (Format ("{:?s}", Optional_String)); 
+-- Shows "Some(value)" or "None"
+
+Put_Line (Format ("{:plural}", Count));
+-- Shows "1 item" or "5 items"
+#+end_src
+
+** Format String Validation
+
+#+begin_src ada
+-- Validate format strings at runtime
+if Is_Valid_Format ("Hello {:invalid}") then
+   -- Won't execute
+end if;
+
+-- Pre-compile format strings
+Cached : constant Compiled_Format := Compile ("User: {} (ID: {})");
+#+end_src
+
+* Testing Strategy
+
+** Unit Tests
+- Each format specifier combination
+- Edge cases (empty strings, max width)
+- Error conditions
+- Memory leak detection
+
+** Property-Based Tests
+- Random valid format strings
+- Fuzzing with invalid input
+- Comparison with C's printf output
+
+** Performance Tests
+- Benchmark vs String concatenation
+- Memory allocation counting
+- Large string handling
+
+** Integration Tests
+- Real-world usage patterns
+- File/stream output
+- Multi-threaded usage
+
+* Documentation Plan
+
+** User Guide
+- Quick start examples
+- Format string syntax reference
+- Common patterns cookbook
+- Migration from 'Image
+
+** API Reference
+- Full specification documentation
+- Generic parameters explained
+- Exception conditions
+
+** Implementation Notes
+- Performance characteristics
+- Memory usage patterns
+- Extension guidelines
+
+* Success Criteria
+
+The library will be considered successful when:
+1. It can replace 'Image and string concatenation in all contexts
+2. Format strings are readable and intuitive
+3. Common errors are caught at compile time
+4. Performance matches or exceeds string concatenation
+5. Users can easily extend it for custom types
+6. It becomes the de facto standard for Ada string formatting
