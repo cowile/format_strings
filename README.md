@@ -131,6 +131,15 @@ Format_Float ("{:.2f}", 3.14159)   -- "3.14" (2 decimal places)
 Format_Float ("{:+.2e}", 1234.5)   -- "+1.23e+3" (scientific with sign)
 ```
 
+### Escape Sequences
+
+Use backslash to escape literal braces:
+
+```ada
+Format_Str ("\{name\} = {}", "value")    -- "{name} = value"
+Format_Int ("Use \{\} for holes", 42)    -- "Use {} for holes"
+```
+
 ## Pre-instantiated Functions
 
 The `Format_Strings.Common` package provides ready-to-use format functions:

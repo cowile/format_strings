@@ -76,7 +76,8 @@ procedure Tests is
       Assert (Count_Holes ("No holes") = 0);
       Assert (Count_Holes ("One {} hole") = 1);
       Assert (Count_Holes ("{} and {}") = 2);
-      -- Assert (Count_Holes ("{{escaped}}") = 0);  -- TODO: Handle escapes
+      Assert (Count_Holes ("\{escaped\}") = 0);  -- Escaped braces
+      Assert (Count_Holes ("Mix {} and \{escaped\}") = 1);
       Put_Line ("  Hole counting: PASSED");
    end Test_Hole_Counting;
 
@@ -137,6 +138,27 @@ procedure Tests is
       Put_Line ("  Float formatting: PASSED");
    end Test_Float_Formatting;
 
+   procedure Test_Escape_Sequences is
+   begin
+      Put_Line ("Testing escape sequences...");
+
+      -- Escaped braces
+      Assert (Format_Int ("\{not a hole\}", 42) = "{not a hole}");
+      Assert (Format_Str ("Use \{\} for holes", "test") = "Use {} for holes");
+
+      -- Mixed escaped and real holes
+      Assert (Format_Int ("Real {} and \{escaped\}", 42) = "Real 42 and {escaped}");
+      Assert (Format_2_Int ("\{} {} \{} {}", 1, 2) = "{} 1 {} 2");
+
+      -- Escaped backslash
+      Assert (Format_Str ("Path: C:\\Users\\{}", "Alice") = "Path: C:\Users\Alice");
+
+      -- Escaped characters in format specs
+      Assert (Format_Str ("Value: \{{}\}", "test") = "Value: {test}");
+
+      Put_Line ("  Escape sequences: PASSED");
+   end Test_Escape_Sequences;
+
 begin
    Put_Line ("Running Format_Strings v1.0 Tests");
    Put_Line ("=================================");
@@ -151,6 +173,7 @@ begin
    Test_Hole_Counting;
    Test_Zero_Padding;
    Test_Float_Formatting;
+   Test_Escape_Sequences;
 
    New_Line;
    Put_Line ("All tests PASSED!");
