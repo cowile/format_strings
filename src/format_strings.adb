@@ -67,7 +67,7 @@ package body Format_Strings is
             Append (Img, To_Base (abs Value, 2));
 
          when 'o' =>
-            if Spec.Alt_Form and Value /= 0 then
+            if Spec.Alt_Form and then Value /= 0 then
                Append (Img, "0");
             end if;
             Append (Img, To_Base (abs Value, 8));
@@ -95,7 +95,7 @@ package body Format_Strings is
             end;
 
          when others =>
-            -- decimal
+            --  decimal
             Append (Img, Trim (Integer'Image (abs Value), Ada.Strings.Both));
       end case;
 
@@ -741,19 +741,488 @@ package body Format_Strings is
       return To_String (Result);
    end Format_3;
 
+   --  Generic four-argument formatter
+   function Format_4
+     (Template : String; Arg1 : T1; Arg2 : T2; Arg3 : T3; Arg4 : T4)
+      return String
+   is
+      Result          : Unbounded_String;
+      State           : Parse_State := Normal;
+      Hole_Start      : Natural := 0;
+      Hole_Count      : Natural := 0;
+      Next_Sequential : Positive := 1;
+   begin
+      for I in Template'Range loop
+         case State is
+            when Normal =>
+               if Template (I) = '\' then
+                  State := Escape;
+               elsif Template (I) = '{' then
+                  State := In_Hole;
+                  Hole_Start := I;
+               else
+                  Append (Result, Template (I));
+               end if;
+
+            when Escape =>
+               Append (Result, Template (I));
+               State := Normal;
+
+            when In_Hole =>
+               if Template (I) = '}' then
+                  Hole_Count := Hole_Count + 1;
+
+                  --  Parse hole content
+                  declare
+                     Hole_Content : constant String :=
+                       Template (Hole_Start + 1 .. I - 1);
+                     Colon_Pos    : Natural := 0;
+                     Position     : Natural := 0;
+                  begin
+                     --  Find colon separator
+                     for J in Hole_Content'Range loop
+                        if Hole_Content (J) = ':' then
+                           Colon_Pos := J;
+                           exit;
+                        end if;
+                     end loop;
+
+                     --  Determine position
+                     if Colon_Pos > 0 and then Hole_Content'Length > 0 then
+                        declare
+                           Pos_Str : constant String :=
+                             Hole_Content
+                               (Hole_Content'First .. Colon_Pos - 1);
+                        begin
+                           if Pos_Str'Length > 0
+                             and then Pos_Str (Pos_Str'First) in '0' .. '9'
+                           then
+                              Position := Natural'Value (Pos_Str);
+                           end if;
+                        end;
+                     elsif Hole_Content'Length > 0
+                       and then Hole_Content (Hole_Content'First) in '0' .. '9'
+                     then
+                        Position := Natural'Value (Hole_Content);
+                     end if;
+
+                     --  Use sequential if no position specified
+                     if Position = 0 then
+                        Position := Next_Sequential;
+                        Next_Sequential := Next_Sequential + 1;
+                     end if;
+
+                     --  Format the appropriate argument
+                     declare
+                        Spec : constant Format_Spec :=
+                          (if Colon_Pos > 0
+                           then
+                             Parse_Spec
+                               (Hole_Content
+                                  (Colon_Pos + 1 .. Hole_Content'Last))
+                           else (others => <>));
+                     begin
+                        case Position is
+                           when 1 =>
+                              Append (Result, Formatter_1 (Arg1, Spec));
+
+                           when 2 =>
+                              Append (Result, Formatter_2 (Arg2, Spec));
+
+                           when 3 =>
+                              Append (Result, Formatter_3 (Arg3, Spec));
+
+                           when 4 =>
+                              Append (Result, Formatter_4 (Arg4, Spec));
+
+                           when others =>
+                              raise Format_Error
+                                with "Invalid position: " & Position'Image;
+                        end case;
+                     end;
+                  end;
+                  State := Normal;
+               elsif Template (I) = '\' then
+                  State := Escape;
+               end if;
+         end case;
+      end loop;
+
+      return To_String (Result);
+   end Format_4;
+
+   --  Generic five-argument formatter
+   function Format_5
+     (Template : String; Arg1 : T1; Arg2 : T2; Arg3 : T3; Arg4 : T4; Arg5 : T5)
+      return String
+   is
+      Result          : Unbounded_String;
+      State           : Parse_State := Normal;
+      Hole_Start      : Natural := 0;
+      Hole_Count      : Natural := 0;
+      Next_Sequential : Positive := 1;
+   begin
+      for I in Template'Range loop
+         case State is
+            when Normal =>
+               if Template (I) = '\' then
+                  State := Escape;
+               elsif Template (I) = '{' then
+                  State := In_Hole;
+                  Hole_Start := I;
+               else
+                  Append (Result, Template (I));
+               end if;
+
+            when Escape =>
+               Append (Result, Template (I));
+               State := Normal;
+
+            when In_Hole =>
+               if Template (I) = '}' then
+                  Hole_Count := Hole_Count + 1;
+
+                  --  Parse hole content
+                  declare
+                     Hole_Content : constant String :=
+                       Template (Hole_Start + 1 .. I - 1);
+                     Colon_Pos    : Natural := 0;
+                     Position     : Natural := 0;
+                  begin
+                     --  Find colon separator
+                     for J in Hole_Content'Range loop
+                        if Hole_Content (J) = ':' then
+                           Colon_Pos := J;
+                           exit;
+                        end if;
+                     end loop;
+
+                     --  Determine position
+                     if Colon_Pos > 0 and then Hole_Content'Length > 0 then
+                        declare
+                           Pos_Str : constant String :=
+                             Hole_Content
+                               (Hole_Content'First .. Colon_Pos - 1);
+                        begin
+                           if Pos_Str'Length > 0
+                             and then Pos_Str (Pos_Str'First) in '0' .. '9'
+                           then
+                              Position := Natural'Value (Pos_Str);
+                           end if;
+                        end;
+                     elsif Hole_Content'Length > 0
+                       and then Hole_Content (Hole_Content'First) in '0' .. '9'
+                     then
+                        Position := Natural'Value (Hole_Content);
+                     end if;
+
+                     --  Use sequential if no position specified
+                     if Position = 0 then
+                        Position := Next_Sequential;
+                        Next_Sequential := Next_Sequential + 1;
+                     end if;
+
+                     --  Format the appropriate argument
+                     declare
+                        Spec : constant Format_Spec :=
+                          (if Colon_Pos > 0
+                           then
+                             Parse_Spec
+                               (Hole_Content
+                                  (Colon_Pos + 1 .. Hole_Content'Last))
+                           else (others => <>));
+                     begin
+                        case Position is
+                           when 1 =>
+                              Append (Result, Formatter_1 (Arg1, Spec));
+
+                           when 2 =>
+                              Append (Result, Formatter_2 (Arg2, Spec));
+
+                           when 3 =>
+                              Append (Result, Formatter_3 (Arg3, Spec));
+
+                           when 4 =>
+                              Append (Result, Formatter_4 (Arg4, Spec));
+
+                           when 5 =>
+                              Append (Result, Formatter_5 (Arg5, Spec));
+
+                           when others =>
+                              raise Format_Error
+                                with "Invalid position: " & Position'Image;
+                        end case;
+                     end;
+                  end;
+                  State := Normal;
+               elsif Template (I) = '\' then
+                  State := Escape;
+               end if;
+         end case;
+      end loop;
+
+      return To_String (Result);
+   end Format_5;
+
+   --  Generic six-argument formatter
+   function Format_6
+     (Template : String;
+      Arg1     : T1;
+      Arg2     : T2;
+      Arg3     : T3;
+      Arg4     : T4;
+      Arg5     : T5;
+      Arg6     : T6) return String
+   is
+      Result          : Unbounded_String;
+      State           : Parse_State := Normal;
+      Hole_Start      : Natural := 0;
+      Hole_Count      : Natural := 0;
+      Next_Sequential : Positive := 1;
+   begin
+      for I in Template'Range loop
+         case State is
+            when Normal =>
+               if Template (I) = '\' then
+                  State := Escape;
+               elsif Template (I) = '{' then
+                  State := In_Hole;
+                  Hole_Start := I;
+               else
+                  Append (Result, Template (I));
+               end if;
+
+            when Escape =>
+               Append (Result, Template (I));
+               State := Normal;
+
+            when In_Hole =>
+               if Template (I) = '}' then
+                  Hole_Count := Hole_Count + 1;
+
+                  --  Parse hole content
+                  declare
+                     Hole_Content : constant String :=
+                       Template (Hole_Start + 1 .. I - 1);
+                     Colon_Pos    : Natural := 0;
+                     Position     : Natural := 0;
+                  begin
+                     --  Find colon separator
+                     for J in Hole_Content'Range loop
+                        if Hole_Content (J) = ':' then
+                           Colon_Pos := J;
+                           exit;
+                        end if;
+                     end loop;
+
+                     --  Determine position
+                     if Colon_Pos > 0 and then Hole_Content'Length > 0 then
+                        declare
+                           Pos_Str : constant String :=
+                             Hole_Content
+                               (Hole_Content'First .. Colon_Pos - 1);
+                        begin
+                           if Pos_Str'Length > 0
+                             and then Pos_Str (Pos_Str'First) in '0' .. '9'
+                           then
+                              Position := Natural'Value (Pos_Str);
+                           end if;
+                        end;
+                     elsif Hole_Content'Length > 0
+                       and then Hole_Content (Hole_Content'First) in '0' .. '9'
+                     then
+                        Position := Natural'Value (Hole_Content);
+                     end if;
+
+                     --  Use sequential if no position specified
+                     if Position = 0 then
+                        Position := Next_Sequential;
+                        Next_Sequential := Next_Sequential + 1;
+                     end if;
+
+                     --  Format the appropriate argument
+                     declare
+                        Spec : constant Format_Spec :=
+                          (if Colon_Pos > 0
+                           then
+                             Parse_Spec
+                               (Hole_Content
+                                  (Colon_Pos + 1 .. Hole_Content'Last))
+                           else (others => <>));
+                     begin
+                        case Position is
+                           when 1 =>
+                              Append (Result, Formatter_1 (Arg1, Spec));
+
+                           when 2 =>
+                              Append (Result, Formatter_2 (Arg2, Spec));
+
+                           when 3 =>
+                              Append (Result, Formatter_3 (Arg3, Spec));
+
+                           when 4 =>
+                              Append (Result, Formatter_4 (Arg4, Spec));
+
+                           when 5 =>
+                              Append (Result, Formatter_5 (Arg5, Spec));
+
+                           when 6 =>
+                              Append (Result, Formatter_6 (Arg6, Spec));
+
+                           when others =>
+                              raise Format_Error
+                                with "Invalid position: " & Position'Image;
+                        end case;
+                     end;
+                  end;
+                  State := Normal;
+               elsif Template (I) = '\' then
+                  State := Escape;
+               end if;
+         end case;
+      end loop;
+
+      return To_String (Result);
+   end Format_6;
+
+   --  Generic seven-argument formatter
+   function Format_7
+     (Template : String;
+      Arg1     : T1;
+      Arg2     : T2;
+      Arg3     : T3;
+      Arg4     : T4;
+      Arg5     : T5;
+      Arg6     : T6;
+      Arg7     : T7) return String
+   is
+      Result          : Unbounded_String;
+      State           : Parse_State := Normal;
+      Hole_Start      : Natural := 0;
+      Hole_Count      : Natural := 0;
+      Next_Sequential : Positive := 1;
+   begin
+      for I in Template'Range loop
+         case State is
+            when Normal =>
+               if Template (I) = '\' then
+                  State := Escape;
+               elsif Template (I) = '{' then
+                  State := In_Hole;
+                  Hole_Start := I;
+               else
+                  Append (Result, Template (I));
+               end if;
+
+            when Escape =>
+               Append (Result, Template (I));
+               State := Normal;
+
+            when In_Hole =>
+               if Template (I) = '}' then
+                  Hole_Count := Hole_Count + 1;
+
+                  --  Parse hole content
+                  declare
+                     Hole_Content : constant String :=
+                       Template (Hole_Start + 1 .. I - 1);
+                     Colon_Pos    : Natural := 0;
+                     Position     : Natural := 0;
+                  begin
+                     --  Find colon separator
+                     for J in Hole_Content'Range loop
+                        if Hole_Content (J) = ':' then
+                           Colon_Pos := J;
+                           exit;
+                        end if;
+                     end loop;
+
+                     --  Determine position
+                     if Colon_Pos > 0 and then Hole_Content'Length > 0 then
+                        declare
+                           Pos_Str : constant String :=
+                             Hole_Content
+                               (Hole_Content'First .. Colon_Pos - 1);
+                        begin
+                           if Pos_Str'Length > 0
+                             and then Pos_Str (Pos_Str'First) in '0' .. '9'
+                           then
+                              Position := Natural'Value (Pos_Str);
+                           end if;
+                        end;
+                     elsif Hole_Content'Length > 0
+                       and then Hole_Content (Hole_Content'First) in '0' .. '9'
+                     then
+                        Position := Natural'Value (Hole_Content);
+                     end if;
+
+                     --  Use sequential if no position specified
+                     if Position = 0 then
+                        Position := Next_Sequential;
+                        Next_Sequential := Next_Sequential + 1;
+                     end if;
+
+                     --  Format the appropriate argument
+                     declare
+                        Spec : constant Format_Spec :=
+                          (if Colon_Pos > 0
+                           then
+                             Parse_Spec
+                               (Hole_Content
+                                  (Colon_Pos + 1 .. Hole_Content'Last))
+                           else (others => <>));
+                     begin
+                        case Position is
+                           when 1 =>
+                              Append (Result, Formatter_1 (Arg1, Spec));
+
+                           when 2 =>
+                              Append (Result, Formatter_2 (Arg2, Spec));
+
+                           when 3 =>
+                              Append (Result, Formatter_3 (Arg3, Spec));
+
+                           when 4 =>
+                              Append (Result, Formatter_4 (Arg4, Spec));
+
+                           when 5 =>
+                              Append (Result, Formatter_5 (Arg5, Spec));
+
+                           when 6 =>
+                              Append (Result, Formatter_6 (Arg6, Spec));
+
+                           when 7 =>
+                              Append (Result, Formatter_7 (Arg7, Spec));
+
+                           when others =>
+                              raise Format_Error
+                                with "Invalid position: " & Position'Image;
+                        end case;
+                     end;
+                  end;
+                  State := Normal;
+               elsif Template (I) = '\' then
+                  State := Escape;
+               end if;
+         end case;
+      end loop;
+
+      return To_String (Result);
+   end Format_7;
+
    --  Backward compatibility wrappers
    function Format_Int (Template : String; Arg : Integer) return String is
       function Fmt is new Format (Integer, Format_Integer);
    begin
       return Fmt (Template, Arg);
    end Format_Int;
-   
+
    function Format_Float (Template : String; Arg : Float) return String is
       function Fmt is new Format (Float, Format_Float);
    begin
       return Fmt (Template, Arg);
    end Format_Float;
-   
+
    function Format_Str (Template : String; Arg : String) return String is
       Result     : Unbounded_String;
       State      : Parse_State := Normal;

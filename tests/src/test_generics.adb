@@ -9,6 +9,8 @@ use Format_Strings;
 
 procedure Test_Generics is
    
+   use Format_Strings.Common;  -- Use pre-instantiated combinations
+   
    --  Instantiate formatters
    function Int_Formatter is new Formatters.Integer_Formatter (Integer);
    function Float_Formatter is new Formatters.Float_Formatter (Float);
@@ -67,7 +69,29 @@ procedure Test_Generics is
    procedure Test_Mixed_Types is
    begin
       Put_Line ("Testing mixed type formatting...");
+      
+      -- Using pre-instantiated functions from Common
       Assert (Format_SI ("{} = {}", "The answer", 42) = "The answer = 42");
+      Assert (Format_IS ("User ID: {}, Name: {}", 123, "Alice") = "User ID: 123, Name: Alice");
+      Assert (Format_IF ("Count: {}, Average: {:.2f}", 10, 3.14159) = "Count: 10, Average: 3.14");
+      
+      -- Three arguments
+      Assert (Format_SII ("{} scored {} out of {}", "Bob", 85, 100) = "Bob scored 85 out of 100");
+      Assert (Format_ISI ("Player {} - {} - Score: {}", 1, "Charlie", 9500) = "Player 1 - Charlie - Score: 9500");
+      
+      -- Four arguments
+      Assert (Format_SSII ("{} {} earned {} points in {} games", 
+                           "Team", "Alpha", 250, 5) = "Team Alpha earned 250 points in 5 games");
+      
+      -- Five arguments with mixed types
+      Assert (Format_SISIB ("User {} (ID: {}) from {} has {} messages. Active: {}",
+                            "Dave", 456, "NYC", 12, True) = 
+              "User Dave (ID: 456) from NYC has 12 messages. Active: True");
+      
+      -- Positional arguments
+      Assert (Format_SI ("{1} = {2}", "The answer", 42) = "The answer = 42");
+      Assert (Format_SI ("{2} is the answer to {1}", "everything", 42) = "42 is the answer to everything");
+      
       Put_Line ("  Mixed types: PASSED");
    end Test_Mixed_Types;
    
