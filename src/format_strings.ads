@@ -34,6 +34,7 @@ package Format_Strings is
 
    --  Basic formatting functions
    function Format (Template : String; Arg : Integer) return String;
+   function Format (Template : String; Arg : Float) return String;
    function Format (Template : String; Arg : String) return String;
    function Format (Template : String; Arg1, Arg2 : Integer) return String;
 

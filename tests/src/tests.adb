@@ -80,6 +80,63 @@ procedure Tests is
       Put_Line ("  Hole counting: PASSED");
    end Test_Hole_Counting;
 
+   procedure Test_Zero_Padding is
+   begin
+      Put_Line ("Testing zero padding...");
+      
+      -- Basic zero padding
+      Assert (Format ("{:05}", 42) = "00042");
+      Assert (Format ("{:05}", -42) = "-0042");
+      
+      -- Zero padding with different bases
+      Assert (Format ("{:#010x}", 255) = "0x000000ff");
+      Assert (Format ("{:#010X}", 255) = "0X000000FF");
+      Assert (Format ("{:#08b}", 15) = "0b001111");
+      
+      -- Zero padding with sign
+      Assert (Format ("{:+05}", 42) = "+0042");
+      Assert (Format ("{:+05}", -42) = "-0042");
+      
+      -- Zero padding is ignored with explicit alignment
+      Assert (Format ("{:<05}", 42) = "42   ");
+      Assert (Format ("{:>05}", 42) = "   42");
+      
+      Put_Line ("  Zero padding: PASSED");
+   end Test_Zero_Padding;
+
+   procedure Test_Float_Formatting is
+   begin
+      Put_Line ("Testing float formatting...");
+      
+      -- Basic float formatting
+      Assert (Format ("Pi: {}", 3.14159) = "Pi: 3.141590");
+      
+      -- Precision control
+      Assert (Format ("Pi: {:.2f}", 3.14159) = "Pi: 3.14");
+      Assert (Format ("Pi: {:.4f}", 3.14159) = "Pi: 3.1415");
+      Assert (Format ("Int: {:.0f}", 3.14159) = "Int: 3");
+      
+      -- Sign control
+      Assert (Format ("{:+.2f}", 3.14) = "+3.14");
+      Assert (Format ("{:+.2f}", -3.14) = "-3.14");
+      
+      -- Scientific notation
+      Assert (Format ("{:.2e}", 1234.5) = "1.23e+3");
+      Assert (Format ("{:.2E}", 1234.5) = "1.23E+3");
+      Assert (Format ("{:.3e}", 0.00123) = "1.230e-3");
+      
+      -- Percentage
+      Assert (Format ("{:.1%}", 0.125) = "12.5%");
+      Assert (Format ("{:.0%}", 0.99) = "99%");
+      
+      -- Width and alignment
+      Assert (Format ("{:10.2f}", 3.14) = "      3.14");
+      Assert (Format ("{:<10.2f}", 3.14) = "3.14      ");
+      Assert (Format ("{:^10.2f}", 3.14) = "   3.14   ");
+      
+      Put_Line ("  Float formatting: PASSED");
+   end Test_Float_Formatting;
+
 begin
    Put_Line ("Running Format_Strings v1.0 Tests");
    Put_Line ("=================================");
@@ -92,6 +149,8 @@ begin
    Test_Sign_Formatting;
    Test_String_Formatting;
    Test_Hole_Counting;
+   Test_Zero_Padding;
+   Test_Float_Formatting;
 
    New_Line;
    Put_Line ("All tests PASSED!");

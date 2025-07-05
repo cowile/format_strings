@@ -102,8 +102,41 @@ package body Format_Strings is
       declare
          Result : constant String := To_String (Img);
       begin
-         --  Apply width formatting
+         --  Apply width formatting with zero-padding support
          if Spec.Width > Result'Length then
+            --  Zero padding needs special handling to put zeros after sign
+            if Spec.Zero_Pad and then Spec.Alignment = Default then
+               declare
+                  Sign_Len : Natural := 0;
+                  Base_Prefix_Len : Natural := 0;
+                  Number_Start : Positive := Result'First;
+               begin
+                  --  Check for sign
+                  if Result'Length > 0 and then Result (Result'First) in '+' | '-' then
+                     Sign_Len := 1;
+                     Number_Start := Number_Start + 1;
+                  end if;
+                  
+                  --  Check for base prefix (0x, 0b, etc)
+                  if Number_Start <= Result'Last - 1 and then
+                     Result (Number_Start) = '0' and then
+                     Result (Number_Start + 1) in 'x' | 'X' | 'b' | 'B' then
+                     Base_Prefix_Len := 2;
+                     Number_Start := Number_Start + 2;
+                  elsif Number_Start <= Result'Last and then
+                        Result (Number_Start) = '0' and then
+                        Spec.Type_Char = 'o' and then Spec.Alt_Form then
+                     Base_Prefix_Len := 1;
+                     Number_Start := Number_Start + 1;
+                  end if;
+                  
+                  --  Build result with zeros in the right place
+                  return Result (Result'First .. Result'First + Sign_Len + Base_Prefix_Len - 1) &
+                         (1 .. Spec.Width - Result'Length => '0') &
+                         Result (Number_Start .. Result'Last);
+               end;
+            end if;
+            
             case Spec.Alignment is
                when Left =>
                   return
@@ -133,6 +166,130 @@ package body Format_Strings is
          end if;
       end;
    end Format_Integer;
+
+   --  Format floats according to spec
+   function Format_Float (Value : Float; Spec : Format_Spec) return String is
+      use Ada.Strings.Fixed;
+
+      --  Helper to format with specific precision
+      function Fixed_Point_Image (V : Float; Precision : Natural) return String
+      is
+         Abs_Val   : constant Float := abs V;
+         Int_Part  : constant Integer := Integer (Float'Floor (Abs_Val));
+         Frac_Part : constant Float := Abs_Val - Float (Int_Part);
+
+         --  Build fractional part with desired precision
+         Frac_String : Unbounded_String;
+         Scaled      : Float := Frac_Part;
+      begin
+         if Precision = 0 then
+            return Trim (Integer'Image (Int_Part), Ada.Strings.Left);
+         end if;
+
+         Append (Frac_String, '.');
+         for I in 1 .. Precision loop
+            Scaled := Scaled * 10.0;
+            declare
+               Digit : constant Integer := Integer (Float'Floor (Scaled));
+            begin
+               Append
+                 (Frac_String, Trim (Integer'Image (Digit), Ada.Strings.Left));
+               Scaled := Scaled - Float (Digit);
+            end;
+         end loop;
+
+         return
+           Trim (Integer'Image (Int_Part), Ada.Strings.Left)
+           & To_String (Frac_String);
+      end Fixed_Point_Image;
+
+      Precision : Natural :=
+        (if Spec.Has_Precision then Spec.Precision else 6);
+      Result    : Unbounded_String;
+   begin
+      --  Handle sign
+      if Value < 0.0 then
+         Append (Result, '-');
+      elsif Spec.Show_Sign then
+         Append (Result, '+');
+      end if;
+
+      --  Format based on type specifier
+      case Spec.Type_Char is
+         when 'e' | 'E' =>
+            --  Scientific notation
+            declare
+               Exp      : Integer := 0;
+               Mantissa : Float := abs Value;
+            begin
+               --  Normalize to 1.0 <= mantissa < 10.0
+               if Mantissa /= 0.0 then
+                  while Mantissa >= 10.0 loop
+                     Mantissa := Mantissa / 10.0;
+                     Exp := Exp + 1;
+                  end loop;
+                  while Mantissa < 1.0 loop
+                     Mantissa := Mantissa * 10.0;
+                     Exp := Exp - 1;
+                  end loop;
+               end if;
+
+               Append (Result, Fixed_Point_Image (Mantissa, Precision));
+               Append (Result, (if Spec.Type_Char = 'E' then 'E' else 'e'));
+               Append (Result, (if Exp >= 0 then '+' else '-'));
+               Append
+                 (Result, Trim (Integer'Image (abs Exp), Ada.Strings.Left));
+            end;
+
+         when 'g' | 'G' =>
+            --  General format (shortest of f or e)
+            --  Simplified: just use fixed for now
+            Append (Result, Fixed_Point_Image (abs Value, Precision));
+
+         when '%' =>
+            --  Percentage
+            Append (Result, Fixed_Point_Image (abs Value * 100.0, Precision));
+            Append (Result, '%');
+
+         when others =>
+            --  Fixed point (default)
+            Append (Result, Fixed_Point_Image (abs Value, Precision));
+      end case;
+
+      declare
+         Formatted : constant String := To_String (Result);
+      begin
+         --  Apply width formatting
+         if Spec.Width > Formatted'Length then
+            case Spec.Alignment is
+               when Left =>
+                  return
+                    Formatted
+                    & (1 .. Spec.Width - Formatted'Length => Spec.Fill_Char);
+
+               when Right | Default =>
+                  return
+                    (1 .. Spec.Width - Formatted'Length => Spec.Fill_Char)
+                    & Formatted;
+
+               when Center =>
+                  declare
+                     Left_Pad  : constant Natural :=
+                       (Spec.Width - Formatted'Length) / 2;
+                     Right_Pad : constant Natural :=
+                       Spec.Width - Formatted'Length - Left_Pad;
+                  begin
+                     return
+                       (1 .. Left_Pad => Spec.Fill_Char)
+                       & Formatted
+                       & (1 .. Right_Pad => Spec.Fill_Char);
+                  end;
+            end case;
+         else
+            return Formatted;
+         end if;
+      end;
+   end Format_Float;
 
    --  Format strings according to spec
    function Format_String (Value : String; Spec : Format_Spec) return String is
@@ -420,6 +577,69 @@ package body Format_Strings is
                         else
                            Append
                              (Result, Format_Integer (Arg, (others => <>)));
+                        end if;
+                     end;
+                     Hole_Found := True;
+                  end if;
+                  State := Normal;
+               elsif Template (I) = '\' then
+                  State := Escape;
+               end if;
+         end case;
+      end loop;
+
+      return To_String (Result);
+   end Format;
+
+   function Format (Template : String; Arg : Float) return String is
+      Result     : Unbounded_String;
+      State      : Parse_State := Normal;
+      Hole_Start : Natural := 0;
+      Hole_Found : Boolean := False;
+   begin
+      for I in Template'Range loop
+         case State is
+            when Normal =>
+               if Template (I) = '\' then
+                  State := Escape;
+               elsif Template (I) = '{' then
+                  State := In_Hole;
+                  Hole_Start := I;
+               else
+                  Append (Result, Template (I));
+               end if;
+
+            when Escape =>
+               Append (Result, Template (I));
+               State := Normal;
+
+            when In_Hole =>
+               if Template (I) = '}' then
+                  if not Hole_Found then
+                     --  Parse and format the argument
+                     declare
+                        Hole_Content : constant String :=
+                          Template (Hole_Start + 1 .. I - 1);
+                        Colon_Pos    : Natural := 0;
+                     begin
+                        for J in Hole_Content'Range loop
+                           if Hole_Content (J) = ':' then
+                              Colon_Pos := J;
+                              exit;
+                           end if;
+                        end loop;
+
+                        if Colon_Pos > 0 then
+                           declare
+                              Spec : constant Format_Spec :=
+                                Parse_Spec
+                                  (Hole_Content
+                                     (Colon_Pos + 1 .. Hole_Content'Last));
+                           begin
+                              Append (Result, Format_Float (Arg, Spec));
+                           end;
+                        else
+                           Append (Result, Format_Float (Arg, (others => <>)));
                         end if;
                      end;
                      Hole_Found := True;
