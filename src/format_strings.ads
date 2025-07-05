@@ -1,32 +1,43 @@
-with Ada.Strings;
-with Ada.Strings.Bounded;
+--  Format_Strings: Type-safe string formatting for Ada
+--
+--  This library provides printf-like formatting with compile-time safety
+--  and an ergonomic API designed for modern Ada development.
 
 package Format_Strings is
-   package Bounded_Strings is new
-     Ada.Strings.Bounded.Generic_Bounded_Length (256);
 
-   Escape_Character : constant Character := '\';
-   Start_Hole_Character : constant Character := '{';
-   End_Hole_Character : constant Character := '}';
+   Format_Error : exception;
 
-   subtype Template is Bounded_Strings.Bounded_String;
-   type Pieces is
-      array (Natural range <>) of Bounded_Strings.Bounded_String;
+   --  Types for format specifications
+   type Alignment_Type is (Left, Right, Center, Default);
 
-   type Format_String (Parts : Natural) is
-      record
-         Given : Template;
-         Holes : Natural := Parts / 2;
-         Filled : Natural := 0;
-         Constructed : Pieces (0 .. Parts);
-      end record;
+   type Format_Spec is record
+      --  Alignment and padding
+      Alignment : Alignment_Type := Default;
+      Fill_Char : Character := ' ';
 
-   function Create (S : String) return Format_String;
+      --  Width and precision
+      Width         : Natural := 0;  -- 0 means no minimum width
+      Precision     : Natural := 0;  -- 0 means default precision
+      Has_Precision : Boolean := False;
 
-   generic
-      type T is private;
-   procedure Format (FS : in out Format_String; Arg : T);
+      --  Type specifier
+      Type_Char : Character := ' ';  -- ' ' means default for type
 
-   function To_String (FS : Format_String) return String;
+      --  Flags
+      Show_Sign : Boolean := False;  -- '+' flag
+      Alt_Form  : Boolean := False;  -- '#' flag
+      Zero_Pad  : Boolean := False;  -- '0' flag
+   end record;
+
+   --  Parse format specifier from string (e.g. ">10.2f")
+   function Parse_Spec (Spec_String : String) return Format_Spec;
+
+   --  Basic formatting functions
+   function Format (Template : String; Arg : Integer) return String;
+   function Format (Template : String; Arg : String) return String;
+   function Format (Template : String; Arg1, Arg2 : Integer) return String;
+
+   --  Template utilities
+   function Count_Holes (Template : String) return Natural;
 
 end Format_Strings;
