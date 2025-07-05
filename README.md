@@ -41,10 +41,10 @@ begin
    Put_Line (Format_SI ("{} = {}", "The answer", 42));
    Put_Line (Format_IS ("User ID: {}, Name: {}", 123, "Alice"));
    Put_Line (Format_IF ("Count: {}, Average: {:.2f}", 10, 3.14159));
-   
+
    -- More arguments
    Put_Line (Format_SII ("{} scored {} out of {}", "Bob", 85, 100));
-   
+
    -- Five arguments with mixed types
    Put_Line (Format_SISIB ("User {} (ID: {}) from {} has {} messages. Active: {}",
                            "Dave", 456, "NYC", 12, True));
@@ -77,7 +77,7 @@ procedure Custom_Example is
    type Point is record
       X, Y : Float;
    end record;
-   
+
    function Point_Formatter (P : Point; Spec : Format_Spec) return String is
    begin
       -- Format based on type specifier
@@ -89,9 +89,9 @@ procedure Custom_Example is
          return "(" & P.X'Image & ", " & P.Y'Image & ")";
       end if;
    end Point_Formatter;
-   
+
    function Format_Point is new Format (Point, Point_Formatter);
-   
+
    P : constant Point := (X => 1.5, Y => 2.5);
 begin
    Put_Line (Format_Point ("Position: {}", P));        -- "Position: ( 1.50000E+00,  2.50000E+00)"
@@ -145,8 +145,9 @@ Format_Int ("Use \{\} for holes", 42)    -- "Use {} for holes"
 The `Format_Strings.Common` package provides ready-to-use format functions:
 
 ### Single Argument
+- `Format_S` - String
 - `Format_I` - Integer
-- `Format_F` - Float  
+- `Format_F` - Float
 - `Format_B` - Boolean
 
 ### Two Arguments
@@ -182,9 +183,9 @@ function My_Formatter (Item : My_Type; Spec : Format_Spec) return String is ...;
 function Format_My is new Format (My_Type, My_Formatter);
 
 -- For multiple arguments with mixed types
-function Format_MISI is new Format_4 
+function Format_MISI is new Format_4
   (My_Type, Integer, String, Integer,
-   My_Formatter, Formatters.Integer_Formatter, 
+   My_Formatter, Formatters.Integer_Formatter,
    Formatters.String_Formatter, Formatters.Integer_Formatter);
 ```
 
