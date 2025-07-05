@@ -32,13 +32,45 @@ package Format_Strings is
    --  Parse format specifier from string (e.g. ">10.2f")
    function Parse_Spec (Spec_String : String) return Format_Spec;
 
-   --  Basic formatting functions
-   function Format (Template : String; Arg : Integer) return String;
-   function Format (Template : String; Arg : Float) return String;
-   function Format (Template : String; Arg : String) return String;
-   function Format (Template : String; Arg1, Arg2 : Integer) return String;
+   --  Generic formatting functions
+
+   --  Single argument formatter
+   generic
+      type T is private;
+      with function Formatter (Item : T; Spec : Format_Spec) return String;
+   function Format (Template : String; Arg : T) return String;
+
+   --  Two argument formatter
+   generic
+      type T1 is private;
+      type T2 is private;
+      with function Formatter_1 (Item : T1; Spec : Format_Spec) return String;
+      with function Formatter_2 (Item : T2; Spec : Format_Spec) return String;
+   function Format_2 (Template : String; Arg1 : T1; Arg2 : T2) return String;
+
+   --  Three argument formatter
+   generic
+      type T1 is private;
+      type T2 is private;
+      type T3 is private;
+      with function Formatter_1 (Item : T1; Spec : Format_Spec) return String;
+      with function Formatter_2 (Item : T2; Spec : Format_Spec) return String;
+      with function Formatter_3 (Item : T3; Spec : Format_Spec) return String;
+   function Format_3
+     (Template : String; Arg1 : T1; Arg2 : T2; Arg3 : T3) return String;
 
    --  Template utilities
    function Count_Holes (Template : String) return Natural;
+
+   --  Helper formatting functions (for backward compatibility)
+   function Format_Integer (Value : Integer; Spec : Format_Spec) return String;
+   function Format_Float (Value : Float; Spec : Format_Spec) return String;
+   function Format_String (Value : String; Spec : Format_Spec) return String;
+
+   --  Backward compatibility overloads
+   function Format_Int (Template : String; Arg : Integer) return String;
+   function Format_Float (Template : String; Arg : Float) return String;
+   function Format_Str (Template : String; Arg : String) return String;
+   function Format_2_Int (Template : String; Arg1, Arg2 : Integer) return String;
 
 end Format_Strings;
