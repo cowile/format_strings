@@ -349,5 +349,3 @@ package body Format_Strings.Formatters is
    end Boolean_Formatter;
 
 end Format_Strings.Formatters;
-
-

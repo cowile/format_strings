@@ -92,8 +92,61 @@ procedure Test_Generics is
       Assert (Format_SI ("{1} = {2}", "The answer", 42) = "The answer = 42");
       Assert (Format_SI ("{2} is the answer to {1}", "everything", 42) = "42 is the answer to everything");
       
+      -- More diverse type combinations
+      Assert (Format_FI ("Pi: {:.2f}, Count: {}", 3.14159, 42) = "Pi: 3.14, Count: 42");
+      Assert (Format_ISIF ("ID: {}, Name: {}, Count: {}, Rate: {:.1%}", 
+                           123, "Test", 5, 0.875) = 
+              "ID: 123, Name: Test, Count: 5, Rate: 87.5%");
+      
+      -- Testing format specifiers with mixed types
+      Assert (Format_SI ("{:>10} = {:04}", "Value", 42) = "     Value = 0042");
+      Assert (Format_ISI ("{:03} - {:^10} - {:x}", 7, "center", 255) = "007 -   center   - ff");
+      
       Put_Line ("  Mixed types: PASSED");
    end Test_Mixed_Types;
+   
+   procedure Test_Six_And_Seven_Args is
+      -- For 6 arguments, we need custom instantiation
+      function Format_SIISIF is new Format_6
+        (String, Integer, Integer, String, Integer, Float,
+         Formatters.String_Formatter, Int_Formatter, Int_Formatter,
+         Formatters.String_Formatter, Int_Formatter, Float_Formatter);
+      
+      -- For 7 arguments
+      function Format_SISISIB is new Format_7
+        (String, Integer, String, Integer, String, Integer, Boolean,
+         Formatters.String_Formatter, Int_Formatter, Formatters.String_Formatter,
+         Int_Formatter, Formatters.String_Formatter, Int_Formatter,
+         Formatters.Boolean_Formatter);
+   begin
+      Put_Line ("Testing 6 and 7 argument formatting...");
+      
+      -- Six arguments test - note: can't use String directly, need wrapper
+      -- Let's test with all same type first
+      declare
+         function Format_6I is new Format_6
+           (Integer, Integer, Integer, Integer, Integer, Integer,
+            Int_Formatter, Int_Formatter, Int_Formatter,
+            Int_Formatter, Int_Formatter, Int_Formatter);
+      begin
+         Assert (Format_6I ("Numbers: {} {} {} {} {} {}", 1, 2, 3, 4, 5, 6) = 
+                 "Numbers: 1 2 3 4 5 6");
+      end;
+      
+      -- Seven arguments test
+      declare
+         function Format_7I is new Format_7
+           (Integer, Integer, Integer, Integer, Integer, Integer, Integer,
+            Int_Formatter, Int_Formatter, Int_Formatter, Int_Formatter,
+            Int_Formatter, Int_Formatter, Int_Formatter);
+      begin
+         Assert (Format_7I ("Lucky numbers: {} {} {} {} {} {} {}", 
+                            7, 11, 13, 17, 19, 23, 29) = 
+                 "Lucky numbers: 7 11 13 17 19 23 29");
+      end;
+      
+      Put_Line ("  6 and 7 args: PASSED");
+   end Test_Six_And_Seven_Args;
    
    procedure Test_Custom_Type is
       type RGB_Color is record
@@ -132,6 +185,7 @@ begin
    Test_Generic_String;
    Test_Generic_Boolean;
    Test_Mixed_Types;
+   Test_Six_And_Seven_Args;
    Test_Custom_Type;
    
    New_Line;

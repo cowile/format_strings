@@ -40,5 +40,3 @@ package Format_Strings.Formatters is
      (Item : Boolean; Spec : Format_Spec) return String;
 
 end Format_Strings.Formatters;
-
-

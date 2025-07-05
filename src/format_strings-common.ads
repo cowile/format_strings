@@ -15,6 +15,9 @@ package Format_Strings.Common is
    function Format_F is new Format (Float, Float_Formatter);
    function Format_B is new Format (Boolean, Formatters.Boolean_Formatter);
 
+   --  Single argument wrapper for String
+   function Format_S (Template : String; Arg : String) return String;
+
    --  For String types, we need wrapper functions since String is indefinite
 
    --  Two argument wrapper for String, Integer
@@ -75,4 +78,3 @@ package Format_Strings.Common is
       Arg5     : Boolean) return String;
 
 end Format_Strings.Common;
-

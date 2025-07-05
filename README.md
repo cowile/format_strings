@@ -25,6 +25,7 @@ begin
    Put_Line (Format_Int ("Number: {}", 42));
    Put_Line (Format_Float ("Pi: {:.2f}", 3.14159));
    Put_Line (Format_Str ("Hello, {}!", "World"));
+   Put_Line (Format_Str ("Name: {:>10}", "Alice"));  -- Right-aligned string
 end Example;
 ```
 

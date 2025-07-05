@@ -1,4 +1,3 @@
-
 package body Format_Strings.Common is
 
    --  Helper type for string wrapper
@@ -6,16 +5,30 @@ package body Format_Strings.Common is
       Value : String (1 .. Length);
    end record;
 
+   --  Single argument wrapper for String
+   function Format_S (Template : String; Arg : String) return String is
+      subtype Arg_String is String (Arg'Range);
+      function Str_Fmt (Item : Arg_String; Spec : Format_Spec) return String is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt;
+      function F is new Format (Arg_String, Str_Fmt);
+   begin
+      return F (Template, Arg);
+   end Format_S;
+
    --  Two argument wrapper for String, Integer
    function Format_SI
      (Template : String; Arg1 : String; Arg2 : Integer) return String
    is
       subtype Arg1_String is String (Arg1'Range);
-      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
-      function F2 is new Format_2 (Arg1_String, Integer, Str_Fmt, Integer_Formatter);
+      function F2 is new
+        Format_2 (Arg1_String, Integer, Str_Fmt, Integer_Formatter);
    begin
       return F2 (Template, Arg1, Arg2);
    end Format_SI;
@@ -25,11 +38,13 @@ package body Format_Strings.Common is
      (Template : String; Arg1 : Integer; Arg2 : String) return String
    is
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
-      function F2 is new Format_2 (Integer, Arg2_String, Integer_Formatter, Str_Fmt);
+      function F2 is new
+        Format_2 (Integer, Arg2_String, Integer_Formatter, Str_Fmt);
    begin
       return F2 (Template, Arg1, Arg2);
    end Format_IS;
@@ -39,12 +54,19 @@ package body Format_Strings.Common is
      (Template : String; Arg1 : String; Arg2, Arg3 : Integer) return String
    is
       subtype Arg1_String is String (Arg1'Range);
-      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
-      function F3 is new Format_3
-        (Arg1_String, Integer, Integer, Str_Fmt, Integer_Formatter, Integer_Formatter);
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Integer,
+           Integer,
+           Str_Fmt,
+           Integer_Formatter,
+           Integer_Formatter);
    begin
       return F3 (Template, Arg1, Arg2, Arg3);
    end Format_SII;
@@ -54,12 +76,19 @@ package body Format_Strings.Common is
       return String
    is
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
-      function F3 is new Format_3
-        (Integer, Arg2_String, Integer, Integer_Formatter, Str_Fmt, Integer_Formatter);
+      function F3 is new
+        Format_3
+          (Integer,
+           Arg2_String,
+           Integer,
+           Integer_Formatter,
+           Str_Fmt,
+           Integer_Formatter);
    begin
       return F3 (Template, Arg1, Arg2, Arg3);
    end Format_ISI;
@@ -69,16 +98,24 @@ package body Format_Strings.Common is
    is
       subtype Arg1_String is String (Arg1'Range);
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt1;
-      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt2;
-      function F3 is new Format_3
-        (Arg1_String, Arg2_String, Integer, Str_Fmt1, Str_Fmt2, Integer_Formatter);
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Arg2_String,
+           Integer,
+           Str_Fmt1,
+           Str_Fmt2,
+           Integer_Formatter);
    begin
       return F3 (Template, Arg1, Arg2, Arg3);
    end Format_SSI;
@@ -90,17 +127,26 @@ package body Format_Strings.Common is
    is
       subtype Arg1_String is String (Arg1'Range);
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt1;
-      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt2;
-      function F4 is new Format_4
-        (Arg1_String, Arg2_String, Integer, Integer,
-         Str_Fmt1, Str_Fmt2, Integer_Formatter, Integer_Formatter);
+      function F4 is new
+        Format_4
+          (Arg1_String,
+           Arg2_String,
+           Integer,
+           Integer,
+           Str_Fmt1,
+           Str_Fmt2,
+           Integer_Formatter,
+           Integer_Formatter);
    begin
       return F4 (Template, Arg1, Arg2, Arg3, Arg4);
    end Format_SSII;
@@ -113,13 +159,21 @@ package body Format_Strings.Common is
       Arg4     : Float) return String
    is
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
-      function F4 is new Format_4
-        (Integer, Arg2_String, Integer, Float,
-         Integer_Formatter, Str_Fmt, Integer_Formatter, Float_Formatter);
+      function F4 is new
+        Format_4
+          (Integer,
+           Arg2_String,
+           Integer,
+           Float,
+           Integer_Formatter,
+           Str_Fmt,
+           Integer_Formatter,
+           Float_Formatter);
    begin
       return F4 (Template, Arg1, Arg2, Arg3, Arg4);
    end Format_ISIF;
@@ -135,18 +189,28 @@ package body Format_Strings.Common is
    is
       subtype Arg1_String is String (Arg1'Range);
       subtype Arg3_String is String (Arg3'Range);
-      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt1;
-      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String is
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt3;
-      function F5 is new Format_5
-        (Arg1_String, Integer, Arg3_String, Integer, Boolean,
-         Str_Fmt1, Integer_Formatter, Str_Fmt3, Integer_Formatter,
-         Formatters.Boolean_Formatter);
+      function F5 is new
+        Format_5
+          (Arg1_String,
+           Integer,
+           Arg3_String,
+           Integer,
+           Boolean,
+           Str_Fmt1,
+           Integer_Formatter,
+           Str_Fmt3,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter);
    begin
       return F5 (Template, Arg1, Arg2, Arg3, Arg4, Arg5);
    end Format_SISIB;
