@@ -11,3 +11,8 @@ tags = ["format", "formatting", "strings", "templates"]
 
 [build-switches]
 "*" . ada_version = "ada2022"
+
+[[actions]]
+type = "test"
+command = ["alr", "run"]
+directory = "tests"
