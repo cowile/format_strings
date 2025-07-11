@@ -13,6 +13,72 @@ package body Format_Strings is
 
    type Hole_Array is array (Positive range <>) of Hole_Info;
 
+   --  Helper functions to break down complex parsing logic
+   function Find_Colon_Separator (Hole_Content : String) return Natural is
+   begin
+      for J in Hole_Content'Range loop
+         if Hole_Content (J) = ':' then
+            return J;
+         end if;
+      end loop;
+      return 0;
+   end Find_Colon_Separator;
+
+   function Determine_Position
+     (Hole_Content    : String;
+      Colon_Pos       : Natural;
+      Next_Sequential : in out Positive) return Natural
+   is
+      Position : Natural := 0;
+   begin
+      --  Parse explicit position before colon
+      if Colon_Pos > 0 and then Hole_Content'Length > 0 then
+         declare
+            Pos_Str : constant String :=
+              Hole_Content (Hole_Content'First .. Colon_Pos - 1);
+         begin
+            if Pos_Str'Length > 0
+              and then Pos_Str (Pos_Str'First) in '0' .. '9'
+            then
+               Position := Natural'Value (Pos_Str);
+            end if;
+         end;
+         --  Parse position-only hole content
+      elsif Hole_Content'Length > 0
+        and then Hole_Content (Hole_Content'First) in '0' .. '9'
+      then
+         Position := Natural'Value (Hole_Content);
+      end if;
+
+      --  Use sequential if no position specified
+      if Position = 0 then
+         Position := Next_Sequential;
+         Next_Sequential := Next_Sequential + 1;
+      end if;
+
+      return Position;
+   end Determine_Position;
+
+   procedure Parse_Hole_Content
+     (Hole_Content    : String;
+      Next_Sequential : in out Positive;
+      Position        : out Natural;
+      Spec            : out Format_Spec)
+   is
+      Colon_Pos : constant Natural := Find_Colon_Separator (Hole_Content);
+   begin
+      Position :=
+        Determine_Position (Hole_Content, Colon_Pos, Next_Sequential);
+
+      --  Parse format spec
+      if Colon_Pos > 0 then
+         Spec :=
+           Parse_Spec (Hole_Content (Colon_Pos + 1 .. Hole_Content'Last));
+      else
+         Spec := (others => <>);
+      end if;
+   end Parse_Hole_Content;
+
    procedure Parse_Template_Holes
      (Template   : String;
       Holes      : out Hole_Array;
@@ -48,61 +114,18 @@ package body Format_Strings is
                   Current_Hole := Current_Hole + 1;
 
                   if Current_Hole <= Holes'Length then
-                     --  Parse hole content
+                     --  Parse hole content using helper functions
                      declare
                         Hole_Content : constant String :=
                           Template (Hole_Start + 1 .. I - 1);
-                        Colon_Pos    : Natural := 0;
-                        Position     : Natural := 0;
+                        Position     : Natural;
+                        Spec         : Format_Spec;
                      begin
-                        --  Find colon separator
-                        for J in Hole_Content'Range loop
-                           if Hole_Content (J) = ':' then
-                              Colon_Pos := J;
-                              exit;
-                           end if;
-                        end loop;
-
-                        --  Determine position
-                        if Colon_Pos > 0 and then Hole_Content'Length > 0 then
-                           declare
-                              Pos_Str : constant String :=
-                                Hole_Content
-                                  (Hole_Content'First .. Colon_Pos - 1);
-                           begin
-                              if Pos_Str'Length > 0
-                                and then Pos_Str (Pos_Str'First) in '0' .. '9'
-                              then
-                                 Position := Natural'Value (Pos_Str);
-                              end if;
-                           end;
-                        elsif Hole_Content'Length > 0
-                          and then Hole_Content (Hole_Content'First) in
-                                     '0' .. '9'
-                        then
-                           Position := Natural'Value (Hole_Content);
-                        end if;
-
-                        --  Use sequential if no position specified
-                        if Position = 0 then
-                           Position := Next_Sequential;
-                           Next_Sequential := Next_Sequential + 1;
-                        end if;
-
-                        --  Parse format spec
-                        declare
-                           Spec : constant Format_Spec :=
-                             (if Colon_Pos > 0
-                              then
-                                Parse_Spec
-                                  (Hole_Content
-                                     (Colon_Pos + 1 .. Hole_Content'Last))
-                              else (others => <>));
-                        begin
-                           Holes (Current_Hole) :=
-                             (Position => Position, Spec => Spec);
-                           Hole_Count := Current_Hole;
-                        end;
+                        Parse_Hole_Content
+                          (Hole_Content, Next_Sequential, Position, Spec);
+                        Holes (Current_Hole) :=
+                          (Position => Position, Spec => Spec);
+                        Hole_Count := Current_Hole;
                      end;
                   end if;
 
@@ -153,58 +176,16 @@ package body Format_Strings is
 
             when In_Hole =>
                if Template (I) = '}' then
-                  --  Parse hole content
+                  --  Parse hole content using helper functions
                   declare
                      Hole_Content : constant String :=
                        Template (Hole_Start + 1 .. I - 1);
-                     Colon_Pos    : Natural := 0;
-                     Position     : Natural := 0;
+                     Position     : Natural;
+                     Spec         : Format_Spec;
                   begin
-                     --  Find colon separator
-                     for J in Hole_Content'Range loop
-                        if Hole_Content (J) = ':' then
-                           Colon_Pos := J;
-                           exit;
-                        end if;
-                     end loop;
-
-                     --  Determine position
-                     if Colon_Pos > 0 and then Hole_Content'Length > 0 then
-                        declare
-                           Pos_Str : constant String :=
-                             Hole_Content
-                               (Hole_Content'First .. Colon_Pos - 1);
-                        begin
-                           if Pos_Str'Length > 0
-                             and then Pos_Str (Pos_Str'First) in '0' .. '9'
-                           then
-                              Position := Natural'Value (Pos_Str);
-                           end if;
-                        end;
-                     elsif Hole_Content'Length > 0
-                       and then Hole_Content (Hole_Content'First) in '0' .. '9'
-                     then
-                        Position := Natural'Value (Hole_Content);
-                     end if;
-
-                     --  Use sequential if no position specified
-                     if Position = 0 then
-                        Position := Next_Sequential;
-                        Next_Sequential := Next_Sequential + 1;
-                     end if;
-
-                     --  Parse format spec
-                     declare
-                        Spec : constant Format_Spec :=
-                          (if Colon_Pos > 0
-                           then
-                             Parse_Spec
-                               (Hole_Content
-                                  (Colon_Pos + 1 .. Hole_Content'Last))
-                           else (others => <>));
-                     begin
-                        Process_Hole (Position, Spec, Result);
-                     end;
+                     Parse_Hole_Content
+                       (Hole_Content, Next_Sequential, Position, Spec);
+                     Process_Hole (Position, Spec, Result);
                   end;
                   State := Normal;
                elsif Template (I) = '\' then
@@ -662,64 +643,25 @@ package body Format_Strings is
    --  Generic single argument formatter
    function Format (Template : String; Arg : T) return String is
       Result     : Unbounded_String;
-      State      : Parse_State := Normal;
-      Hole_Start : Natural := 0;
       Hole_Found : Boolean := False;
+
+      procedure Process_Hole
+        (Position : Natural;
+         Spec     : Format_Spec;
+         Result   : in out Unbounded_String)
+      is
+         pragma Unreferenced (Position);
+      begin
+         --  Single argument formatter only processes the first hole
+         if not Hole_Found then
+            Append (Result, Formatter (Arg, Spec));
+            Hole_Found := True;
+         end if;
+      end Process_Hole;
+
+      procedure Process_Template_Single is new Process_Template (Process_Hole);
    begin
-      for I in Template'Range loop
-         case State is
-            when Normal =>
-               if Template (I) = '\' then
-                  State := Escape;
-               elsif Template (I) = '{' then
-                  State := In_Hole;
-                  Hole_Start := I;
-               else
-                  Append (Result, Template (I));
-               end if;
-
-            when Escape =>
-               Append (Result, Template (I));
-               State := Normal;
-
-            when In_Hole =>
-               if Template (I) = '}' then
-                  if not Hole_Found then
-                     --  Parse and format the argument
-                     declare
-                        Hole_Content : constant String :=
-                          Template (Hole_Start + 1 .. I - 1);
-                        Colon_Pos    : Natural := 0;
-                     begin
-                        for J in Hole_Content'Range loop
-                           if Hole_Content (J) = ':' then
-                              Colon_Pos := J;
-                              exit;
-                           end if;
-                        end loop;
-
-                        if Colon_Pos > 0 then
-                           declare
-                              Spec : constant Format_Spec :=
-                                Parse_Spec
-                                  (Hole_Content
-                                     (Colon_Pos + 1 .. Hole_Content'Last));
-                           begin
-                              Append (Result, Formatter (Arg, Spec));
-                           end;
-                        else
-                           Append (Result, Formatter (Arg, (others => <>)));
-                        end if;
-                     end;
-                     Hole_Found := True;
-                  end if;
-                  State := Normal;
-               elsif Template (I) = '\' then
-                  State := Escape;
-               end if;
-         end case;
-      end loop;
-
+      Process_Template_Single (Template, Result);
       return To_String (Result);
    end Format;
 
