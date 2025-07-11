@@ -1,7 +1,13 @@
 package body Format_Strings.Common is
 
-   --  Single argument wrapper for String
-   function Format_S (Template : String; Arg : String) return String is
+   --  ==========================================================================
+   --  UNIFIED FORMAT INTERFACE IMPLEMENTATIONS
+   --  ==========================================================================
+   --  These renaming declarations provide the unified Format interface by
+   --  mapping to appropriate generic instantiations
+
+   --  Single argument overloads (4 combinations)
+   function Format (Template : String; Arg : String) return String is
       subtype Arg_String is String (Arg'Range);
       function Str_Fmt (Item : Arg_String; Spec : Format_Spec) return String is
       begin
@@ -10,203 +16,29 @@ package body Format_Strings.Common is
       function F is new Format_Strings.Format (Arg_String, Str_Fmt);
    begin
       return F (Template, Arg);
-   end Format_S;
+   end Format;
 
-   --  Two argument wrapper for String, Integer
-   function Format_SI
-     (Template : String; Arg1 : String; Arg2 : Integer) return String
-   is
-      subtype Arg1_String is String (Arg1'Range);
-      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt;
-      function F2 is new
-        Format_2 (Arg1_String, Integer, Str_Fmt, Integer_Formatter);
+   function Format (Template : String; Arg : Integer) return String is
+      function I_Fmt is new Format_Strings.Format (Integer, Integer_Formatter);
    begin
-      return F2 (Template, Arg1, Arg2);
-   end Format_SI;
+      return I_Fmt (Template, Arg);
+   end Format;
 
-   --  Two argument wrapper for Integer, String
-   function Format_IS
-     (Template : String; Arg1 : Integer; Arg2 : String) return String
-   is
-      subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt;
-      function F2 is new
-        Format_2 (Integer, Arg2_String, Integer_Formatter, Str_Fmt);
+   function Format (Template : String; Arg : Float) return String is
+      function F_Fmt is new Format_Strings.Format (Float, Float_Formatter);
    begin
-      return F2 (Template, Arg1, Arg2);
-   end Format_IS;
+      return F_Fmt (Template, Arg);
+   end Format;
 
-   --  Three argument wrappers
-   function Format_SII
-     (Template : String; Arg1 : String; Arg2, Arg3 : Integer) return String
-   is
-      subtype Arg1_String is String (Arg1'Range);
-      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt;
-      function F3 is new
-        Format_3
-          (Arg1_String,
-           Integer,
-           Integer,
-           Str_Fmt,
-           Integer_Formatter,
-           Integer_Formatter);
+   function Format (Template : String; Arg : Boolean) return String is
+      function B_Fmt is new
+        Format_Strings.Format (Boolean, Formatters.Boolean_Formatter);
    begin
-      return F3 (Template, Arg1, Arg2, Arg3);
-   end Format_SII;
+      return B_Fmt (Template, Arg);
+   end Format;
 
-   function Format_ISI
-     (Template : String; Arg1 : Integer; Arg2 : String; Arg3 : Integer)
-      return String
-   is
-      subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt;
-      function F3 is new
-        Format_3
-          (Integer,
-           Arg2_String,
-           Integer,
-           Integer_Formatter,
-           Str_Fmt,
-           Integer_Formatter);
-   begin
-      return F3 (Template, Arg1, Arg2, Arg3);
-   end Format_ISI;
-
-   function Format_SSI
-     (Template : String; Arg1, Arg2 : String; Arg3 : Integer) return String
-   is
-      subtype Arg1_String is String (Arg1'Range);
-      subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
-      is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt1;
-      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
-      is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt2;
-      function F3 is new
-        Format_3
-          (Arg1_String,
-           Arg2_String,
-           Integer,
-           Str_Fmt1,
-           Str_Fmt2,
-           Integer_Formatter);
-   begin
-      return F3 (Template, Arg1, Arg2, Arg3);
-   end Format_SSI;
-
-   --  Four argument wrappers
-   function Format_SSII
-     (Template : String; Arg1, Arg2 : String; Arg3, Arg4 : Integer)
-      return String
-   is
-      subtype Arg1_String is String (Arg1'Range);
-      subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
-      is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt1;
-      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
-      is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt2;
-      function F4 is new
-        Format_4
-          (Arg1_String,
-           Arg2_String,
-           Integer,
-           Integer,
-           Str_Fmt1,
-           Str_Fmt2,
-           Integer_Formatter,
-           Integer_Formatter);
-   begin
-      return F4 (Template, Arg1, Arg2, Arg3, Arg4);
-   end Format_SSII;
-
-   function Format_ISIF
-     (Template : String;
-      Arg1     : Integer;
-      Arg2     : String;
-      Arg3     : Integer;
-      Arg4     : Float) return String
-   is
-      subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt;
-      function F4 is new
-        Format_4
-          (Integer,
-           Arg2_String,
-           Integer,
-           Float,
-           Integer_Formatter,
-           Str_Fmt,
-           Integer_Formatter,
-           Float_Formatter);
-   begin
-      return F4 (Template, Arg1, Arg2, Arg3, Arg4);
-   end Format_ISIF;
-
-   --  Five argument wrapper
-   function Format_SISIB
-     (Template : String;
-      Arg1     : String;
-      Arg2     : Integer;
-      Arg3     : String;
-      Arg4     : Integer;
-      Arg5     : Boolean) return String
-   is
-      subtype Arg1_String is String (Arg1'Range);
-      subtype Arg3_String is String (Arg3'Range);
-      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
-      is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt1;
-      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
-      is
-      begin
-         return Formatters.String_Formatter (Item, Spec);
-      end Str_Fmt3;
-      function F5 is new
-        Format_5
-          (Arg1_String,
-           Integer,
-           Arg3_String,
-           Integer,
-           Boolean,
-           Str_Fmt1,
-           Integer_Formatter,
-           Str_Fmt3,
-           Integer_Formatter,
-           Formatters.Boolean_Formatter);
-   begin
-      return F5 (Template, Arg1, Arg2, Arg3, Arg4, Arg5);
-   end Format_SISIB;
-
-   --  Additional two argument wrapper functions
-   function Format_SS (Template : String; Arg1, Arg2 : String) return String is
+   --  Two argument overloads (16 combinations)
+   function Format (Template : String; Arg1, Arg2 : String) return String is
       subtype Arg1_String is String (Arg1'Range);
       subtype Arg2_String is String (Arg2'Range);
       function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
@@ -223,13 +55,29 @@ package body Format_Strings.Common is
         Format_2 (Arg1_String, Arg2_String, Str_Fmt1, Str_Fmt2);
    begin
       return F2 (Template, Arg1, Arg2);
-   end Format_SS;
+   end Format;
 
-   function Format_SF
+   function Format
+     (Template : String; Arg1 : String; Arg2 : Integer) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt;
+      function F2 is new
+        Format_2 (Arg1_String, Integer, Str_Fmt, Integer_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : String; Arg2 : Float) return String
    is
       subtype Arg1_String is String (Arg1'Range);
-      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
@@ -237,13 +85,14 @@ package body Format_Strings.Common is
         Format_2 (Arg1_String, Float, Str_Fmt, Float_Formatter);
    begin
       return F2 (Template, Arg1, Arg2);
-   end Format_SF;
+   end Format;
 
-   function Format_SB
+   function Format
      (Template : String; Arg1 : String; Arg2 : Boolean) return String
    is
       subtype Arg1_String is String (Arg1'Range);
-      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg1_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
@@ -251,13 +100,58 @@ package body Format_Strings.Common is
         Format_2 (Arg1_String, Boolean, Str_Fmt, Formatters.Boolean_Formatter);
    begin
       return F2 (Template, Arg1, Arg2);
-   end Format_SB;
+   end Format;
 
-   function Format_FS
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : String) return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt;
+      function F2 is new
+        Format_2 (Integer, Arg2_String, Integer_Formatter, Str_Fmt);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format (Template : String; Arg1, Arg2 : Integer) return String is
+      function F2 is new
+        Format_2 (Integer, Integer, Integer_Formatter, Integer_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : Float) return String
+   is
+      function F2 is new
+        Format_2 (Integer, Float, Integer_Formatter, Float_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : Boolean) return String
+   is
+      function F2 is new
+        Format_2
+          (Integer,
+           Boolean,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Float; Arg2 : String) return String
    is
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
@@ -265,13 +159,43 @@ package body Format_Strings.Common is
         Format_2 (Float, Arg2_String, Float_Formatter, Str_Fmt);
    begin
       return F2 (Template, Arg1, Arg2);
-   end Format_FS;
+   end Format;
 
-   function Format_BS
+   function Format
+     (Template : String; Arg1 : Float; Arg2 : Integer) return String
+   is
+      function F2 is new
+        Format_2 (Float, Integer, Float_Formatter, Integer_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format (Template : String; Arg1, Arg2 : Float) return String is
+      function F2 is new
+        Format_2 (Float, Float, Float_Formatter, Float_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Float; Arg2 : Boolean) return String
+   is
+      function F2 is new
+        Format_2
+          (Float,
+           Boolean,
+           Float_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Boolean; Arg2 : String) return String
    is
       subtype Arg2_String is String (Arg2'Range);
-      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String is
+      function Str_Fmt (Item : Arg2_String; Spec : Format_Spec) return String
+      is
       begin
          return Formatters.String_Formatter (Item, Spec);
       end Str_Fmt;
@@ -279,11 +203,49 @@ package body Format_Strings.Common is
         Format_2 (Boolean, Arg2_String, Formatters.Boolean_Formatter, Str_Fmt);
    begin
       return F2 (Template, Arg1, Arg2);
-   end Format_BS;
+   end Format;
 
-   --  Key three argument wrapper functions (implement most common ones first)
-   function Format_SSS
-     (Template : String; Arg1, Arg2, Arg3 : String) return String
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2 : Integer) return String
+   is
+      function F2 is new
+        Format_2
+          (Boolean,
+           Integer,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2 : Float) return String
+   is
+      function F2 is new
+        Format_2
+          (Boolean,
+           Float,
+           Formatters.Boolean_Formatter,
+           Float_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   function Format (Template : String; Arg1, Arg2 : Boolean) return String is
+      function F2 is new
+        Format_2
+          (Boolean,
+           Boolean,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F2 (Template, Arg1, Arg2);
+   end Format;
+
+   --  Three argument overloads (64 combinations) - examples for key combinations
+   --  For brevity, implementing a few key combinations; others follow the same pattern
+
+   function Format (Template : String; Arg1, Arg2, Arg3 : String) return String
    is
       subtype Arg1_String is String (Arg1'Range);
       subtype Arg2_String is String (Arg2'Range);
@@ -313,9 +275,137 @@ package body Format_Strings.Common is
            Str_Fmt3);
    begin
       return F3 (Template, Arg1, Arg2, Arg3);
-   end Format_SSS;
+   end Format;
 
-   function Format_SIS
+   function Format
+     (Template : String; Arg1, Arg2 : String; Arg3 : Integer) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Arg2_String,
+           Integer,
+           Str_Fmt1,
+           Str_Fmt2,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2, Arg3 : Integer) return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Integer,
+           Integer,
+           Integer_Formatter,
+           Integer_Formatter,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format (Template : String; Arg1, Arg2, Arg3 : Float) return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Float,
+           Float,
+           Float_Formatter,
+           Float_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2, Arg3 : Boolean) return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Boolean,
+           Boolean,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   --  For remaining three argument combinations, provide stub implementations
+   --  These can be implemented following the same pattern as above
+
+   function Format
+     (Template : String; Arg1, Arg2 : String; Arg3 : Float) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Arg2_String,
+           Float,
+           Str_Fmt1,
+           Str_Fmt2,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : String; Arg3 : Boolean) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Arg2_String,
+           Boolean,
+           Str_Fmt1,
+           Str_Fmt2,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : String; Arg2 : Integer; Arg3 : String)
       return String
    is
@@ -341,221 +431,1087 @@ package body Format_Strings.Common is
            Str_Fmt3);
    begin
       return F3 (Template, Arg1, Arg2, Arg3);
-   end Format_SIS;
+   end Format;
 
-   --  Stub implementations for remaining functions (to get builds working)
-   function Format_SSF
-     (Template : String; Arg1, Arg2 : String; Arg3 : Float) return String is
+   function Format
+     (Template : String; Arg1 : String; Arg2, Arg3 : Integer) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Integer,
+           Integer,
+           Str_Fmt1,
+           Integer_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_SSF";
-   end Format_SSF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SSB
-     (Template : String; Arg1, Arg2 : String; Arg3 : Boolean) return String is
-   begin
-      return "STUB_SSB";
-   end Format_SSB;
-
-   function Format_SIF
+   function Format
      (Template : String; Arg1 : String; Arg2 : Integer; Arg3 : Float)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Integer,
+           Float,
+           Str_Fmt1,
+           Integer_Formatter,
+           Float_Formatter);
    begin
-      return "STUB_SIF";
-   end Format_SIF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SIB
+   function Format
      (Template : String; Arg1 : String; Arg2 : Integer; Arg3 : Boolean)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Integer,
+           Boolean,
+           Str_Fmt1,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter);
    begin
-      return "STUB_SIB";
-   end Format_SIB;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SFS
+   function Format
      (Template : String; Arg1 : String; Arg2 : Float; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Float,
+           Arg3_String,
+           Str_Fmt1,
+           Float_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_SFS";
-   end Format_SFS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SFI
+   function Format
      (Template : String; Arg1 : String; Arg2 : Float; Arg3 : Integer)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Float,
+           Integer,
+           Str_Fmt1,
+           Float_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_SFI";
-   end Format_SFI;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SFF
-     (Template : String; Arg1 : String; Arg2, Arg3 : Float) return String is
+   function Format
+     (Template : String; Arg1 : String; Arg2, Arg3 : Float) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Float,
+           Float,
+           Str_Fmt1,
+           Float_Formatter,
+           Float_Formatter);
    begin
-      return "STUB_SFF";
-   end Format_SFF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SFB
+   function Format
      (Template : String; Arg1 : String; Arg2 : Float; Arg3 : Boolean)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Float,
+           Boolean,
+           Str_Fmt1,
+           Float_Formatter,
+           Formatters.Boolean_Formatter);
    begin
-      return "STUB_SFB";
-   end Format_SFB;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SBS
+   function Format
      (Template : String; Arg1 : String; Arg2 : Boolean; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Boolean,
+           Arg3_String,
+           Str_Fmt1,
+           Formatters.Boolean_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_SBS";
-   end Format_SBS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SBI
+   function Format
      (Template : String; Arg1 : String; Arg2 : Boolean; Arg3 : Integer)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Boolean,
+           Integer,
+           Str_Fmt1,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_SBI";
-   end Format_SBI;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SBF
+   function Format
      (Template : String; Arg1 : String; Arg2 : Boolean; Arg3 : Float)
-      return String is
+      return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Boolean,
+           Float,
+           Str_Fmt1,
+           Formatters.Boolean_Formatter,
+           Float_Formatter);
    begin
-      return "STUB_SBF";
-   end Format_SBF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_SBB
-     (Template : String; Arg1 : String; Arg2, Arg3 : Boolean) return String is
+   function Format
+     (Template : String; Arg1 : String; Arg2, Arg3 : Boolean) return String
+   is
+      subtype Arg1_String is String (Arg1'Range);
+      function Str_Fmt1 (Item : Arg1_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt1;
+      function F3 is new
+        Format_3
+          (Arg1_String,
+           Boolean,
+           Boolean,
+           Str_Fmt1,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter);
    begin
-      return "STUB_SBB";
-   end Format_SBB;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_ISS
-     (Template : String; Arg1 : Integer; Arg2, Arg3 : String) return String is
+   function Format
+     (Template : String; Arg1 : Integer; Arg2, Arg3 : String) return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Integer,
+           Arg2_String,
+           Arg3_String,
+           Integer_Formatter,
+           Str_Fmt2,
+           Str_Fmt3);
    begin
-      return "STUB_ISS";
-   end Format_ISS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_ISF
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : String; Arg3 : Integer)
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Integer,
+           Arg2_String,
+           Integer,
+           Integer_Formatter,
+           Str_Fmt2,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Integer; Arg2 : String; Arg3 : Float)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Integer,
+           Arg2_String,
+           Float,
+           Integer_Formatter,
+           Str_Fmt2,
+           Float_Formatter);
    begin
-      return "STUB_ISF";
-   end Format_ISF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_ISB
+   function Format
      (Template : String; Arg1 : Integer; Arg2 : String; Arg3 : Boolean)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Integer,
+           Arg2_String,
+           Boolean,
+           Integer_Formatter,
+           Str_Fmt2,
+           Formatters.Boolean_Formatter);
    begin
-      return "STUB_ISB";
-   end Format_ISB;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_IIS
-     (Template : String; Arg1, Arg2 : Integer; Arg3 : String) return String is
+   function Format
+     (Template : String; Arg1, Arg2 : Integer; Arg3 : String) return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Integer,
+           Integer,
+           Arg3_String,
+           Integer_Formatter,
+           Integer_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_IIS";
-   end Format_IIS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_IFS
+   function Format
+     (Template : String; Arg1, Arg2 : Integer; Arg3 : Float) return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Integer,
+           Float,
+           Integer_Formatter,
+           Integer_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Integer; Arg3 : Boolean) return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Integer,
+           Boolean,
+           Integer_Formatter,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Integer; Arg2 : Float; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Integer,
+           Float,
+           Arg3_String,
+           Integer_Formatter,
+           Float_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_IFS";
-   end Format_IFS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_IBS
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : Float; Arg3 : Integer)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Float,
+           Integer,
+           Integer_Formatter,
+           Float_Formatter,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Integer; Arg2, Arg3 : Float) return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Float,
+           Float,
+           Integer_Formatter,
+           Float_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : Float; Arg3 : Boolean)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Float,
+           Boolean,
+           Integer_Formatter,
+           Float_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Integer; Arg2 : Boolean; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Integer,
+           Boolean,
+           Arg3_String,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_IBS";
-   end Format_IBS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FSS
-     (Template : String; Arg1 : Float; Arg2, Arg3 : String) return String is
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : Boolean; Arg3 : Integer)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Boolean,
+           Integer,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_FSS";
-   end Format_FSS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FSI
+   function Format
+     (Template : String; Arg1 : Integer; Arg2 : Boolean; Arg3 : Float)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Boolean,
+           Float,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Integer; Arg2, Arg3 : Boolean) return String
+   is
+      function F3 is new
+        Format_3
+          (Integer,
+           Boolean,
+           Boolean,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Float; Arg2, Arg3 : String) return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Float,
+           Arg2_String,
+           Arg3_String,
+           Float_Formatter,
+           Str_Fmt2,
+           Str_Fmt3);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Float; Arg2 : String; Arg3 : Integer)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Float,
+           Arg2_String,
+           Integer,
+           Float_Formatter,
+           Str_Fmt2,
+           Integer_Formatter);
    begin
-      return "STUB_FSI";
-   end Format_FSI;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FSF
+   function Format
      (Template : String; Arg1 : Float; Arg2 : String; Arg3 : Float)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Float,
+           Arg2_String,
+           Float,
+           Float_Formatter,
+           Str_Fmt2,
+           Float_Formatter);
    begin
-      return "STUB_FSF";
-   end Format_FSF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FSB
+   function Format
      (Template : String; Arg1 : Float; Arg2 : String; Arg3 : Boolean)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Float,
+           Arg2_String,
+           Boolean,
+           Float_Formatter,
+           Str_Fmt2,
+           Formatters.Boolean_Formatter);
    begin
-      return "STUB_FSB";
-   end Format_FSB;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FIS
+   function Format
      (Template : String; Arg1 : Float; Arg2 : Integer; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Float,
+           Integer,
+           Arg3_String,
+           Float_Formatter,
+           Integer_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_FIS";
-   end Format_FIS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FFS
-     (Template : String; Arg1, Arg2 : Float; Arg3 : String) return String is
+   function Format
+     (Template : String; Arg1 : Float; Arg2, Arg3 : Integer) return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Integer,
+           Integer,
+           Float_Formatter,
+           Integer_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_FFS";
-   end Format_FFS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_FBS
+   function Format
+     (Template : String; Arg1 : Float; Arg2 : Integer; Arg3 : Float)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Integer,
+           Float,
+           Float_Formatter,
+           Integer_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Float; Arg2 : Integer; Arg3 : Boolean)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Integer,
+           Boolean,
+           Float_Formatter,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Float; Arg3 : String) return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Float,
+           Float,
+           Arg3_String,
+           Float_Formatter,
+           Float_Formatter,
+           Str_Fmt3);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Float; Arg3 : Integer) return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Float,
+           Integer,
+           Float_Formatter,
+           Float_Formatter,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Float; Arg3 : Boolean) return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Float,
+           Boolean,
+           Float_Formatter,
+           Float_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Float; Arg2 : Boolean; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Float,
+           Boolean,
+           Arg3_String,
+           Float_Formatter,
+           Formatters.Boolean_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_FBS";
-   end Format_FBS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BSS
-     (Template : String; Arg1 : Boolean; Arg2, Arg3 : String) return String is
+   function Format
+     (Template : String; Arg1 : Float; Arg2 : Boolean; Arg3 : Integer)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Boolean,
+           Integer,
+           Float_Formatter,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_BSS";
-   end Format_BSS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BSI
+   function Format
+     (Template : String; Arg1 : Float; Arg2, Arg3 : Boolean) return String
+   is
+      function F3 is new
+        Format_3
+          (Float,
+           Boolean,
+           Boolean,
+           Float_Formatter,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2, Arg3 : String) return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Arg2_String,
+           Arg3_String,
+           Formatters.Boolean_Formatter,
+           Str_Fmt2,
+           Str_Fmt3);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Boolean; Arg2 : String; Arg3 : Integer)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Arg2_String,
+           Integer,
+           Formatters.Boolean_Formatter,
+           Str_Fmt2,
+           Integer_Formatter);
    begin
-      return "STUB_BSI";
-   end Format_BSI;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BSF
+   function Format
      (Template : String; Arg1 : Boolean; Arg2 : String; Arg3 : Float)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Arg2_String,
+           Float,
+           Formatters.Boolean_Formatter,
+           Str_Fmt2,
+           Float_Formatter);
    begin
-      return "STUB_BSF";
-   end Format_BSF;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BSB
+   function Format
      (Template : String; Arg1 : Boolean; Arg2 : String; Arg3 : Boolean)
-      return String is
+      return String
+   is
+      subtype Arg2_String is String (Arg2'Range);
+      function Str_Fmt2 (Item : Arg2_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt2;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Arg2_String,
+           Boolean,
+           Formatters.Boolean_Formatter,
+           Str_Fmt2,
+           Formatters.Boolean_Formatter);
    begin
-      return "STUB_BSB";
-   end Format_BSB;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BIS
+   function Format
      (Template : String; Arg1 : Boolean; Arg2 : Integer; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Integer,
+           Arg3_String,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_BIS";
-   end Format_BIS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BFS
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2, Arg3 : Integer) return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Integer,
+           Integer,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2 : Integer; Arg3 : Float)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Integer,
+           Float,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2 : Integer; Arg3 : Boolean)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Integer,
+           Boolean,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
      (Template : String; Arg1 : Boolean; Arg2 : Float; Arg3 : String)
-      return String is
+      return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Float,
+           Arg3_String,
+           Formatters.Boolean_Formatter,
+           Float_Formatter,
+           Str_Fmt3);
    begin
-      return "STUB_BFS";
-   end Format_BFS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
-   function Format_BBS
-     (Template : String; Arg1, Arg2 : Boolean; Arg3 : String) return String is
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2 : Float; Arg3 : Integer)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Float,
+           Integer,
+           Formatters.Boolean_Formatter,
+           Float_Formatter,
+           Integer_Formatter);
    begin
-      return "STUB_BBS";
-   end Format_BBS;
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2, Arg3 : Float) return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Float,
+           Float,
+           Formatters.Boolean_Formatter,
+           Float_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1 : Boolean; Arg2 : Float; Arg3 : Boolean)
+      return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Float,
+           Boolean,
+           Formatters.Boolean_Formatter,
+           Float_Formatter,
+           Formatters.Boolean_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Boolean; Arg3 : String) return String
+   is
+      subtype Arg3_String is String (Arg3'Range);
+      function Str_Fmt3 (Item : Arg3_String; Spec : Format_Spec) return String
+      is
+      begin
+         return Formatters.String_Formatter (Item, Spec);
+      end Str_Fmt3;
+      function F3 is new
+        Format_3
+          (Boolean,
+           Boolean,
+           Arg3_String,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter,
+           Str_Fmt3);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Boolean; Arg3 : Integer) return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Boolean,
+           Integer,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter,
+           Integer_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
+
+   function Format
+     (Template : String; Arg1, Arg2 : Boolean; Arg3 : Float) return String
+   is
+      function F3 is new
+        Format_3
+          (Boolean,
+           Boolean,
+           Float,
+           Formatters.Boolean_Formatter,
+           Formatters.Boolean_Formatter,
+           Float_Formatter);
+   begin
+      return F3 (Template, Arg1, Arg2, Arg3);
+   end Format;
 
 end Format_Strings.Common;

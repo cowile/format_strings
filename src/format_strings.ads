@@ -2,6 +2,13 @@
 --
 --  This library provides printf-like formatting with compile-time safety
 --  and an ergonomic API designed for modern Ada development.
+--
+--  RECOMMENDED USAGE: Use Format_Strings.Common for the unified interface
+--    with Format_Strings.Common; use Format_Strings.Common;
+--    Result := Format("Hello {}", "World");
+--
+--  This package contains the low-level generic infrastructure.
+--  Most users should use Format_Strings.Common instead.
 
 package Format_Strings is
 
