@@ -1,6 +1,7 @@
 with Ada.Assertions;
 with Ada.Text_IO;
 with Format_Strings;
+with Format_Strings.Common;
 
 use Ada.Assertions;
 use Ada.Text_IO;
@@ -161,6 +162,26 @@ procedure Tests is
       Put_Line ("  Escape sequences: PASSED");
    end Test_Escape_Sequences;
 
+   procedure Test_Unified_Interface is
+   begin
+      Put_Line ("Testing unified Format interface...");
+      
+      -- Test single argument overloads
+      Assert (Format_Strings.Common.Format ("String: {}", "Hello") = "String: Hello");
+      Assert (Format_Strings.Common.Format ("Integer: {}", 42) = "Integer: 42");
+      
+      -- Test two argument overloads 
+      Assert (Format_Strings.Common.Format ("Two strings: {} {}", "Hello", "World") = "Two strings: Hello World");
+      Assert (Format_Strings.Common.Format ("String + Integer: {} = {}", "Answer", 42) = "String + Integer: Answer = 42");
+      Assert (Format_Strings.Common.Format ("Two integers: {} + {}", 2, 3) = "Two integers: 2 + 3");
+      
+      -- Test three argument overloads (implemented ones)
+      Assert (Format_Strings.Common.Format ("Three strings: {} {} {}", "One", "Two", "Three") = "Three strings: One Two Three");
+      Assert (Format_Strings.Common.Format ("String Int String: {} {} {}", "Value", 42, "End") = "String Int String: Value 42 End");
+      
+      Put_Line ("  Unified interface: PASSED");
+   end Test_Unified_Interface;
+
 begin
    Put_Line ("Running Format_Strings v1.0 Tests");
    Put_Line ("=================================");
@@ -176,6 +197,7 @@ begin
    Test_Zero_Padding;
    Test_Float_Formatting;
    Test_Escape_Sequences;
+   Test_Unified_Interface;
 
    New_Line;
    Put_Line ("All tests PASSED!");
