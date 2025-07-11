@@ -122,38 +122,41 @@ end Custom_Example;
 
 ### Adding Support for More Arguments
 
-The unified Format interface supports up to 3 arguments. For more arguments or custom type combinations, instantiate the generic Format functions:
+The unified Format interface supports up to 3 arguments. For more arguments, instantiate the generic Format functions. Note that these require definite subtypes (e.g., Integer, Float, Boolean) rather than indefinite ones (e.g., String):
 
 ```ada
 with Format_Strings; use Format_Strings;
 with Format_Strings.Formatters;
 
--- For 4 arguments
-function My_Format_4 is new Format_4
-  (String, Integer, Float, Boolean,
-   Formatters.String_Formatter,
-   Formatters.Integer_Formatter,
-   Formatters.Float_Formatter,
-   Formatters.Boolean_Formatter);
+-- For 4 arguments with definite types
+declare
+   function Int_Fmt is new Formatters.Integer_Formatter (Integer);
+   function Float_Fmt is new Formatters.Float_Formatter (Float);
 
--- For 5 arguments
-function My_Format_5 is new Format_5
-  (String, Integer, String, Float, Boolean,
-   Formatters.String_Formatter,
-   Formatters.Integer_Formatter,
-   Formatters.String_Formatter,
-   Formatters.Float_Formatter,
-   Formatters.Boolean_Formatter);
+   function My_Format_4 is new Format_4
+     (T1 => Integer,
+      T2 => Integer,
+      T3 => Float,
+      T4 => Boolean,
+      Formatter_1 => Int_Fmt,
+      Formatter_2 => Int_Fmt,
+      Formatter_3 => Float_Fmt,
+      Formatter_4 => Formatters.Boolean_Formatter);
+begin
+   Put_Line (My_Format_4 ("Values: {}, {}, {:.1f}, {}", 1, 2, 3.14, True));
+end;
 
 -- For custom types with multiple arguments
 type My_Type is ...;
 function My_Formatter (Item : My_Type; Spec : Format_Spec) return String is ...;
 
 function Format_Custom is new Format_3
-  (My_Type, Integer, String,
-   My_Formatter,
-   Formatters.Integer_Formatter,
-   Formatters.String_Formatter);
+  (T1 => My_Type,
+   T2 => Integer,
+   T3 => Boolean,
+   Formatter_1 => My_Formatter,
+   Formatter_2 => Int_Fmt,
+   Formatter_3 => Formatters.Boolean_Formatter);
 ```
 
 ### Using the Generic Interface Directly

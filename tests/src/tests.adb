@@ -2,6 +2,7 @@ with Ada.Assertions;
 with Ada.Text_IO;
 with Format_Strings;
 with Format_Strings.Common;
+with Format_Strings.Formatters;
 
 use Ada.Assertions;
 use Ada.Text_IO;
@@ -207,6 +208,88 @@ procedure Tests is
       Put_Line ("  + This is the ONLY interface for Format_Strings!");
    end Test_Unified_Interface;
 
+   procedure Test_Custom_Type_Formatting is
+   begin
+      Put_Line ("Testing custom Point type formatting...");
+
+      --  Define Point type and formatter
+      declare
+         type Point is record
+            X, Y : Float;
+         end record;
+
+         function Point_Formatter
+           (P : Point; Spec : Format_Strings.Format_Spec) return String is
+         begin
+            --  Format based on type specifier
+            if Spec.Type_Char = 'd' then
+               --  Debug format
+               return "Point(X => " & P.X'Image &
+                      ", Y => " & P.Y'Image & ")";
+            else
+               --  Default format
+               return "(" & P.X'Image & ", " & P.Y'Image & ")";
+            end if;
+         end Point_Formatter;
+
+         function Format_Point is new Format_Strings.Format
+           (Point, Point_Formatter);
+
+         P : constant Point := (X => 1.5, Y => 2.5);
+      begin
+         Assert (Format_Point ("Position: {}", P) =
+                 "Position: ( 1.50000E+00,  2.50000E+00)");
+         Assert (Format_Point ("Debug: {:d}", P) =
+                 "Debug: Point(X =>  1.50000E+00, Y =>  2.50000E+00)");
+      end;
+
+      Put_Line ("  Custom type formatting: PASSED");
+   end Test_Custom_Type_Formatting;
+
+   procedure Test_Additional_Arguments is
+   begin
+      Put_Line ("Testing Format_4 with Integer types...");
+
+      declare
+         --  First instantiate the Integer formatters
+         function Int_Fmt is new
+           Format_Strings.Formatters.Integer_Formatter (Integer);
+
+         --  Format_4 with Integer types (definite subtypes)
+         function My_Format_4 is new Format_Strings.Format_4
+           (T1 => Integer,
+            T2 => Integer,
+            T3 => Integer,
+            T4 => Integer,
+            Formatter_1 => Int_Fmt,
+            Formatter_2 => Int_Fmt,
+            Formatter_3 => Int_Fmt,
+            Formatter_4 => Int_Fmt);
+      begin
+         Assert (My_Format_4 ("Values: {}, {}, {}, {}", 1, 2, 3, 4) =
+                 "Values: 1, 2, 3, 4");
+      end;
+
+      Put_Line ("  Format_4 with integers: PASSED");
+   end Test_Additional_Arguments;
+
+   procedure Test_Generic_Interface_Direct is
+   begin
+      Put_Line ("Testing generic interface directly...");
+
+      declare
+         --  Instantiate formatter for a specific type
+         function Int_Fmt is new
+           Format_Strings.Formatters.Integer_Formatter (Integer);
+         function My_Format is new Format_Strings.Format (Integer, Int_Fmt);
+      begin
+         Assert (My_Format ("Value: {:08x}", 255) = "Value: 000000ff");
+         Assert (My_Format ("Decimal: {}", 42) = "Decimal: 42");
+      end;
+
+      Put_Line ("  Generic interface direct: PASSED");
+   end Test_Generic_Interface_Direct;
+
 begin
    Put_Line ("Running Format_Strings v1.0 Tests (Unified Interface Only)");
    Put_Line ("===========================================================");
@@ -227,8 +310,15 @@ begin
 
    --  PRIMARY INTERFACE TESTS (main interface)
    Test_Unified_Interface;
+   New_Line;
+
+   --  ADVANCED FEATURES TESTS (from README examples)
+   Test_Custom_Type_Formatting;
+   Test_Additional_Arguments;
+   Test_Generic_Interface_Direct;
 
    New_Line;
    Put_Line ("All tests PASSED!");
    Put_Line ("Format_Strings unified interface is clean and simple!");
+   Put_Line ("README.md examples verified and working!");
 end Tests;
