@@ -211,10 +211,6 @@ begin
    Put_Line ("Running Format_Strings v1.0 Tests (Unified Interface Only)");
    Put_Line ("===========================================================");
 
-   --  PRIMARY INTERFACE TESTS (only interface)
-   Test_Unified_Interface;
-   New_Line;
-
    --  CORE FUNCTIONALITY TESTS
    Test_Basic_Integer;
    Test_Multiple_Args;
@@ -227,6 +223,10 @@ begin
    Test_Zero_Padding;
    Test_Float_Formatting;
    Test_Escape_Sequences;
+   New_Line;
+
+   --  PRIMARY INTERFACE TESTS (main interface)
+   Test_Unified_Interface;
 
    New_Line;
    Put_Line ("All tests PASSED!");

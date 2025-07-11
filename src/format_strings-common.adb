@@ -1,8 +1,8 @@
 package body Format_Strings.Common is
 
-   --  ==========================================================================
+   --  ========================================================================
    --  UNIFIED FORMAT INTERFACE IMPLEMENTATIONS
-   --  ==========================================================================
+   --  ========================================================================
    --  These renaming declarations provide the unified Format interface by
    --  mapping to appropriate generic instantiations
 
@@ -242,8 +242,9 @@ package body Format_Strings.Common is
       return F2 (Template, Arg1, Arg2);
    end Format;
 
-   --  Three argument overloads (64 combinations) - examples for key combinations
-   --  For brevity, implementing a few key combinations; others follow the same pattern
+   --  Three argument overloads (64 combinations) - examples for key
+   --  combinations For brevity, implementing a few key combinations;
+   --  others follow the same pattern
 
    function Format (Template : String; Arg1, Arg2, Arg3 : String) return String
    is

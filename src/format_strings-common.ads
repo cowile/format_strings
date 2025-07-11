@@ -1,7 +1,8 @@
 --  Format_Strings.Common: Modern Unified Formatting Interface
 --
---  This package provides the RECOMMENDED way to use Format_Strings through
---  a single overloaded "Format" function that works with all type combinations.
+--  This package provides the RECOMMENDED way to use Format_Strings
+--  through a single overloaded "Format" function that works with all
+--  type combinations.
 --
 --  QUICK START:
 --    with Format_Strings.Common; use Format_Strings.Common;
@@ -13,29 +14,26 @@
 --    Result := Format("Order: {1} {0}", "Second", "First"); -- Positional
 --
 --  The unified Format function supports:
---  â¢ All combinations of String, Integer, Float, Boolean (up to 3 arguments)
---  â¢ Full format specifier syntax: alignment, width, precision, type
---  â¢ Positional arguments and automatic sequential assignment
---  â¢ Type-safe compile-time resolution
---  â¢ Zero runtime overhead through Ada generics
---
---  This replaces the old numbered functions (Format_Int, Format_2, etc.)
---  while maintaining full backward compatibility.
+--  All combinations of String, Integer, Float, Boolean (up to 3 arguments)
+--  Full format specifier syntax: alignment, width, precision, type
+--  Positional arguments and automatic sequential assignment
+--  Type-safe compile-time resolution
+--  Zero runtime overhead through Ada generics
 
 with Format_Strings.Formatters;
 
 package Format_Strings.Common is
 
-   --  ==========================================================================
+   --  ========================================================================
    --  I. INTERNAL FORMATTERS (Pre-instantiated for standard types)
-   --  ==========================================================================
+   --  ========================================================================
 
    function Integer_Formatter is new Formatters.Integer_Formatter (Integer);
    function Float_Formatter is new Formatters.Float_Formatter (Float);
 
-   --  ==========================================================================
+   --  ========================================================================
    --  II. UNIFIED FORMAT INTERFACE (RECOMMENDED PRIMARY INTERFACE)
-   --  ==========================================================================
+   --  ========================================================================
    --  Use these overloaded Format functions for clean, modern code:
    --    Result := Format("Hello {}", "World");
    --    Result := Format("Value: {}", 42);

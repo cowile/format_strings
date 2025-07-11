@@ -148,16 +148,4 @@ package Format_Strings is
    --  Template utilities
    function Count_Holes (Template : String) return Natural;
 
-   --  Helper formatting functions (for backward compatibility)
-   function Format_Integer (Value : Integer; Spec : Format_Spec) return String;
-   function Format_Float (Value : Float; Spec : Format_Spec) return String;
-   function Format_String (Value : String; Spec : Format_Spec) return String;
-
-   --  Backward compatibility overloads
-   function Format_Int (Template : String; Arg : Integer) return String;
-   function Format_Float (Template : String; Arg : Float) return String;
-   function Format_Str (Template : String; Arg : String) return String;
-   function Format_2_Int
-     (Template : String; Arg1, Arg2 : Integer) return String;
-
 end Format_Strings;
