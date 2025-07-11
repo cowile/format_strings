@@ -25,14 +25,13 @@ procedure Tests is
    end Test_Multiple_Args;
 
    procedure Test_Positional_Args is
-      Result : constant String := Format ("{1} before {0}", 10, 20);
+      Result : constant String := Format ("{2} before {1}", 10, 20);
    begin
       Put_Line ("Testing positional arguments...");
       Put_Line ("  Expected: '20 before 10'");
       Put_Line ("  Got:      '" & Result & "'");
-      --  Note: Positional arguments may not work correctly
-      --  This is a known limitation that would need additional implementation
-      Put_Line ("  Positional args: SKIPPED (known limitation)");
+      Assert (Result = "20 before 10");
+      Put_Line ("  Positional args: PASSED");
    end Test_Positional_Args;
 
    procedure Test_Width_Formatting is
@@ -199,7 +198,10 @@ procedure Tests is
       Assert (Format ("Width: {:>5}", 42) = "Width:    42");
       Assert (Format ("Precision: {:.2f}", 3.14159) = "Precision: 3.14");
 
-      --  Note: Positional arguments may need additional work
+      --  Positional arguments work with 1-based indexing
+      Assert (Format ("{2} before {1}", "cart", "horse") =
+              "horse before cart");
+      Assert (Format ("{3} {1} {2}", "B", "C", "A") = "A B C");
 
       Put_Line ("  + Unified Format interface: PASSED");
       Put_Line ("  + This is the ONLY interface for Format_Strings!");
