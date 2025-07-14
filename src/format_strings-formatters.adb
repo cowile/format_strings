@@ -3,13 +3,6 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body Format_Strings.Formatters is
 
-   function Default_Image (Item : T; Ignore_Spec : Format_Spec) return String
-   is
-   begin
-      --  Default implementation uses 'Image
-      return T'Image (Item);
-   end Default_Image;
-
    function Integer_Formatter
      (Item : Int_Type; Spec : Format_Spec) return String
    is
@@ -130,7 +123,7 @@ package body Format_Strings.Formatters is
                     Result
                       (Result'First
                        .. Result'First + Sign_Len + Base_Prefix_Len - 1)
-                    & [1 .. Spec.Width - Result'Length => '0']
+                    & (1 .. Spec.Width - Result'Length => '0')
                     & Result (Number_Start .. Result'Last);
                end;
             end if;
@@ -139,11 +132,11 @@ package body Format_Strings.Formatters is
                when Left =>
                   return
                     Result
-                    & [1 .. Spec.Width - Result'Length => Spec.Fill_Char];
+                    & (1 .. Spec.Width - Result'Length => Spec.Fill_Char);
 
                when Right | Default =>
                   return
-                    [1 .. Spec.Width - Result'Length => Spec.Fill_Char]
+                    (1 .. Spec.Width - Result'Length => Spec.Fill_Char)
                     & Result;
 
                when Center =>
@@ -154,9 +147,9 @@ package body Format_Strings.Formatters is
                        Spec.Width - Result'Length - Left_Pad;
                   begin
                      return
-                       [1 .. Left_Pad => Spec.Fill_Char]
+                       (1 .. Left_Pad => Spec.Fill_Char)
                        & Result
-                       & [1 .. Right_Pad => Spec.Fill_Char];
+                       & (1 .. Right_Pad => Spec.Fill_Char);
                   end;
             end case;
          else
@@ -275,11 +268,11 @@ package body Format_Strings.Formatters is
                when Left =>
                   return
                     Formatted
-                    & [1 .. Spec.Width - Formatted'Length => Spec.Fill_Char];
+                    & (1 .. Spec.Width - Formatted'Length => Spec.Fill_Char);
 
                when Right | Default =>
                   return
-                    [1 .. Spec.Width - Formatted'Length => Spec.Fill_Char]
+                    (1 .. Spec.Width - Formatted'Length => Spec.Fill_Char)
                     & Formatted;
 
                when Center =>
@@ -290,9 +283,9 @@ package body Format_Strings.Formatters is
                        Spec.Width - Formatted'Length - Left_Pad;
                   begin
                      return
-                       [1 .. Left_Pad => Spec.Fill_Char]
+                       (1 .. Left_Pad => Spec.Fill_Char)
                        & Formatted
-                       & [1 .. Right_Pad => Spec.Fill_Char];
+                       & (1 .. Right_Pad => Spec.Fill_Char);
                   end;
             end case;
          else
@@ -313,11 +306,11 @@ package body Format_Strings.Formatters is
          case Spec.Alignment is
             when Left | Default =>
                return
-                 Result & [1 .. Spec.Width - Result'Length => Spec.Fill_Char];
+                 Result & (1 .. Spec.Width - Result'Length => Spec.Fill_Char);
 
             when Right =>
                return
-                 [1 .. Spec.Width - Result'Length => Spec.Fill_Char] & Result;
+                 (1 .. Spec.Width - Result'Length => Spec.Fill_Char) & Result;
 
             when Center =>
                declare
@@ -327,9 +320,9 @@ package body Format_Strings.Formatters is
                     Spec.Width - Result'Length - Left_Pad;
                begin
                   return
-                    [1 .. Left_Pad => Spec.Fill_Char]
+                    (1 .. Left_Pad => Spec.Fill_Char)
                     & Result
-                    & [1 .. Right_Pad => Spec.Fill_Char];
+                    & (1 .. Right_Pad => Spec.Fill_Char);
                end;
          end case;
       else
@@ -340,7 +333,7 @@ package body Format_Strings.Formatters is
    function Character_Formatter
      (Item : Character; Spec : Format_Spec) return String is
    begin
-      return String_Formatter ([1 => Item], Spec);
+      return String_Formatter ((1 => Item), Spec);
    end Character_Formatter;
 
    function Boolean_Formatter

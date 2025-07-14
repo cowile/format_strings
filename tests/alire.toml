@@ -19,6 +19,3 @@ format_strings = { path =".." }
 
 [build-profiles]
 format_strings = "development"
-
-[build-switches]
-"*" . ada_version = "ada2022"

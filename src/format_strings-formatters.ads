@@ -3,13 +3,6 @@
 
 package Format_Strings.Formatters is
 
-   --  Generic formatter function type
-   generic
-      type T is private;
-   function Default_Image (Item : T; Ignore_Spec : Format_Spec) return String;
-
-   --  Predefined formatters for standard types
-
    --  Integer types
    generic
       type Int_Type is range <>;

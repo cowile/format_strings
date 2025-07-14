@@ -9,9 +9,6 @@ licenses = "GPL-3.0-or-later"
 website = "https://github.com/cowile/format_strings"
 tags = ["format", "formatting", "strings", "templates"]
 
-[build-switches]
-"*" . ada_version = "ada2022"
-
 [[actions]]
 type = "test"
 command = ["alr", "run"]
